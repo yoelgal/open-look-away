@@ -1,0 +1,47 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: build
+        run: bash scripts/build-app.sh
+
+      - name: the bundle's version is the tag
+        run: |
+          STAMPED="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \
+              "dist/Open Look Away.app/Contents/Info.plist")"
+          EXPECTED="${GITHUB_REF_NAME#v}"
+          [ "$STAMPED" = "$EXPECTED" ] || {
+              echo "release: tag $GITHUB_REF_NAME stamped $STAMPED, expected $EXPECTED" >&2
+              exit 1
+          }
+
+      - name: package
+        run: bash scripts/package-release.sh
+
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="$GITHUB_REF_NAME"
+          case "$TAG" in
+              *-*) CHANNEL="--prerelease" ;;
+              *)   CHANNEL="--latest" ;;
+          esac
+          gh release create "$TAG" --verify-tag --generate-notes $CHANNEL \
+              dist/OpenLookAway-arm64.zip dist/OpenLookAway-arm64.zip.sha256

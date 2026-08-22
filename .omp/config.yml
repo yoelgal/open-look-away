@@ -1,0 +1,30 @@
+bash:
+  patterns:
+    # recursive delete
+    - match: "rm -r*"
+      approval: prompt
+    - match: "rm --recursive*"
+      approval: prompt
+    # history and worktree destruction
+    - match: "git push *--force*"
+      approval: prompt
+    - match: "git push *-f *"
+      approval: prompt
+    - match: "git reset --hard*"
+      approval: prompt
+    - match: "git clean -f*"
+      approval: prompt
+    # infrastructure
+    - match: "kubectl delete*"
+      approval: prompt
+    - match: "docker rm -f*"
+      approval: prompt
+    - match: "docker system prune*"
+      approval: prompt
+    # SQL object destruction, which arrives inside a quoted -e argument
+    - match: "*DROP TABLE*"
+      approval: prompt
+    - match: "*DROP DATABASE*"
+      approval: prompt
+    - match: "*TRUNCATE TABLE*"
+      approval: prompt

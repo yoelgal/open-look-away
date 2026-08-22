@@ -1,0 +1,8 @@
+.DS_Store
+.build/
+dist/
+xcuserdata/
+*.xcuserstate
+DerivedData/
+gauntlet/run/
+/tmp/
