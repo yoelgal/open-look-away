@@ -11,39 +11,68 @@ struct OnboardingView: View {
     @State private var openAtLogin = Onboarding.opensAtLogin
     @State private var accessibilityTrusted = Onboarding.isAccessibilityTrusted
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text("OpenLookAway")
-                .font(.system(size: 18, weight: .medium))
-            Text("Set your rhythm, then grant typing pause.")
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
+    private let accent = Color(red: 0.20, green: 0.48, blue: 0.96)
 
-            Picker("Timing", selection: $preset) {
-                ForEach(TimingPreset.allCases) { item in
-                    Text(item.title).tag(item)
-                }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("OpenLookAway")
+                    .font(.system(size: 22, weight: .semibold))
+                Text("Set your rhythm, then grant typing pause.")
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
             }
-            .pickerStyle(.segmented)
-            .onChange(of: preset) { next in
-                if let focus = next.focusMinutes { focusMinutes = focus }
-                if let pause = next.shortBreakSeconds { shortBreakSeconds = pause }
+            .padding(.bottom, 22)
+
+            Text("Timing")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
+                .padding(.bottom, 8)
+
+            HStack(spacing: 8) {
+                ForEach(TimingPreset.allCases) { item in
+                    Button {
+                        preset = item
+                        if let focus = item.focusMinutes { focusMinutes = focus }
+                        if let pause = item.shortBreakSeconds { shortBreakSeconds = pause }
+                    } label: {
+                        Text(item.title)
+                            .font(.system(size: 13, weight: .medium))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                    .fill(preset == item ? accent : Color.primary.opacity(0.08))
+                            )
+                            .foregroundStyle(preset == item ? Color.white : Color.primary)
+                    }
+                    .buttonStyle(.plain)
+                }
             }
 
             Text(preset.subtitle)
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
+                .padding(.top, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-            if preset == .custom {
-                Stepper("Focus \(focusMinutes) min", value: $focusMinutes, in: 1...120)
-                Stepper("Short break \(shortBreakSeconds)s", value: $shortBreakSeconds, in: 5...120)
+            // Fixed slot so Custom never shifts the rest of the layout.
+            VStack(alignment: .leading, spacing: 8) {
+                if preset == .custom {
+                    Stepper("Focus  \(focusMinutes) min", value: $focusMinutes, in: 1...120)
+                    Stepper("Short break  \(shortBreakSeconds)s", value: $shortBreakSeconds, in: 5...120)
+                }
             }
+            .frame(maxWidth: .infinity, minHeight: 64, maxHeight: 64, alignment: .topLeading)
+            .padding(.top, 8)
 
             Divider()
+                .padding(.vertical, 16)
 
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text("Accessibility")
+                        .font(.system(size: 13, weight: .medium))
                     Text(accessibilityTrusted ? "Granted. Typing pause can run." : "Needed so breaks wait while you type.")
                         .font(.system(size: 12))
                         .foregroundStyle(.secondary)
@@ -57,10 +86,14 @@ struct OnboardingView: View {
             }
 
             Toggle("Open at login", isOn: $openAtLogin)
+                .toggleStyle(.checkbox)
+                .padding(.top, 14)
                 .onChange(of: openAtLogin) { on in
                     Onboarding.setOpenAtLogin(on)
                     openAtLogin = Onboarding.opensAtLogin
                 }
+
+            Spacer(minLength: 0)
 
             HStack {
                 Spacer()
@@ -74,11 +107,13 @@ struct OnboardingView: View {
                     onFinished()
                 }
                 .keyboardShortcut(.defaultAction)
+                .buttonStyle(.borderedProminent)
+                .tint(accent)
             }
         }
-        .padding(24)
-        .padding(.top, 16)
-        .frame(width: 520, height: 400)
+        .padding(28)
+        .padding(.top, 12)
+        .frame(width: 540, height: 440)
         .background(Color.clear)
         .onAppear {
             accessibilityTrusted = Onboarding.isAccessibilityTrusted
@@ -105,7 +140,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
                 self?.finishFromButton()
             }
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 520, height: 420),
+                contentRect: NSRect(x: 0, y: 0, width: 540, height: 460),
                 styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false

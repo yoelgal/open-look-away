@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -6,6 +7,7 @@ struct SettingsView: View {
     @State private var denylistText: String = ""
     @State private var checking = false
     @State private var checkResult: UpdateCheck.Outcome?
+    @State private var updateProblem: String?
 
     var body: some View {
         VStack(spacing: 16) {
@@ -132,26 +134,64 @@ struct SettingsView: View {
     private var about: some View {
         Form {
             Section {
-                LabeledContent("Version", value: AppInfo.version)
-                Button(checking ? "Checking…" : "Check for updates") {
-                    checking = true
-                    checkResult = nil
-                    Task {
-                        checkResult = await store.checkForUpdates()
-                        checking = false
-                    }
+                LabeledContent("This copy") {
+                    Text("Version \(AppInfo.version)")
+                        .foregroundStyle(.secondary)
                 }
-                .disabled(checking)
+                HStack {
+                    Button(checking ? "Checking…" : "Check now") {
+                        checking = true
+                        checkResult = nil
+                        Task {
+                            checkResult = await store.checkForUpdates()
+                            checking = false
+                        }
+                    }
+                    .disabled(checking)
+                    Spacer()
+                }
                 if let checkResult {
                     switch checkResult {
                     case .update(let update):
                         Text("Version \(update.version) is available.")
-                            .foregroundStyle(.secondary)
+                            .font(.callout)
+                            .foregroundStyle(Color(nsColor: .systemGreen))
+                        HStack(spacing: 12) {
+                            if SelfUpdate.isPossible {
+                                Button("Update now") {
+                                    updateProblem = SelfUpdate.run(to: update.version)
+                                }
+                                .buttonStyle(.borderedProminent)
+                            } else {
+                                Button("Copy install command") {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(SelfUpdate.command, forType: .string)
+                                }
+                            }
+                            Button("What changed") {
+                                NSWorkspace.shared.open(update.url)
+                            }
+                            .buttonStyle(.link)
+                        }
+                        if let updateProblem {
+                            Text(updateProblem)
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
+                        if SelfUpdate.isPossible {
+                            Text(SelfUpdate.whatUpdateDoes(sourceRoot: AppInfo.sourceRoot))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     case .upToDate:
                         Text("You are up to date.")
+                            .font(.callout)
                             .foregroundStyle(.secondary)
                     case .failed(let why):
-                        Text(why).foregroundStyle(.orange)
+                        Text(why)
+                            .font(.callout)
+                            .foregroundStyle(Color(nsColor: .systemOrange))
                     case .skipped:
                         EmptyView()
                     }
@@ -162,8 +202,11 @@ struct SettingsView: View {
                     get: { UpdateCheck.isEnabled(store.defaults) },
                     set: { UpdateCheck.setEnabled($0, defaults: store.defaults) }
                 ))
-            } footer: {
-                Text("Asks GitHub once a day. Sends nothing about you.")
+                Text("OpenLookAway asks GitHub once a day whether a newer version exists. It sends nothing about you.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .formStyle(.grouped)
