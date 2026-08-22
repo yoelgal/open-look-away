@@ -64,7 +64,7 @@ struct OnboardingView: View {
 
             HStack {
                 Spacer()
-                Button("Start") {
+                Button("Start now") {
                     Onboarding.setOpenAtLogin(openAtLogin)
                     store.finishOnboarding(
                         focusMinutes: focusMinutes,
@@ -123,15 +123,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
     }
 
     func windowWillClose(_ notification: Notification) {
-        guard let store, store.needsOnboarding else {
-            NSApp.setActivationPolicy(.accessory)
-            return
-        }
-        store.finishOnboarding(
-            focusMinutes: 20,
-            shortBreakSeconds: 20,
-            accessibilityGranted: Onboarding.isAccessibilityTrusted
-        )
+        // Closing without Start now keeps setup pending. Timer stays off.
         NSApp.setActivationPolicy(.accessory)
         onFinished?()
         onFinished = nil

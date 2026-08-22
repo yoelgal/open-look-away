@@ -6,9 +6,7 @@ enum Onboarding {
     static let flagKey = "ola.onboarding.v1"
 
     static func needsOnboarding(defaults: UserDefaults) -> Bool {
-        if defaults.bool(forKey: flagKey) { return false }
-        if defaults.data(forKey: AppSettings.storageKey) != nil { return false }
-        return true
+        !defaults.bool(forKey: flagKey)
     }
 
     static func markFinished(defaults: UserDefaults) {

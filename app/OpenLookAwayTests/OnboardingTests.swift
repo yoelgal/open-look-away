@@ -29,6 +29,17 @@ final class OnboardingTests: XCTestCase {
         XCTAssertEqual(store.engine.phase, .idle)
     }
 
+    func testExistingSettingsStillNeedOnboardingUntilStartNow() {
+        var settings = AppSettings()
+        settings.focusMinutes = 10
+        settings.save(defaults: defaults)
+        let store = SessionStore(defaults: defaults)
+        XCTAssertTrue(store.needsOnboarding)
+        XCTAssertEqual(store.engine.phase, .idle)
+        store.step(now: Date())
+        XCTAssertEqual(store.engine.focusedSeconds, 0)
+    }
+
     func testFinishStartsFocusWithChosenPreset() {
         let store = SessionStore(defaults: defaults)
         store.finishOnboarding(
