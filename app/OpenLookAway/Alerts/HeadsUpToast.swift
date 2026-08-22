@@ -20,13 +20,10 @@ final class HeadsUpController {
             panel.isFloatingPanel = true
             panel.level = .statusBar
             panel.titleVisibility = .hidden
-            panel.titlebarAppearsTransparent = true
-            panel.isOpaque = false
-            panel.backgroundColor = .clear
             panel.hasShadow = true
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             panel.hidesOnDeactivate = false
-            panel.contentView = NSHostingView(rootView: HeadsUpToast(store: store))
+            panel.installGlassHost(HeadsUpToast(store: store), cornerRadius: 16)
             window = panel
         }
         guard let window, !window.isVisible else { return }
@@ -61,7 +58,9 @@ struct HeadsUpToast: View {
         }
         .padding(16)
         .frame(width: 340, alignment: .leading)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .background {
+            OpaqueGlass().clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
     }
 
     private var time: String {

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Open Look Away — one-command install.
+# OpenLookAway — one-command install.
 #
 #   curl -fsSL https://raw.githubusercontent.com/yoelgal/open-look-away/main/install.sh | bash
 #
@@ -29,7 +29,7 @@ APPS="${OLA_APPS:-/Applications}"
 REPO="https://github.com/yoelgal/open-look-away.git"
 RELEASES="https://github.com/yoelgal/open-look-away/releases"
 ASSET="OpenLookAway-arm64.zip"
-APP_NAME="Open Look Away.app"
+APP_NAME="OpenLookAway.app"
 BUNDLE_ID="dev.openlookaway.app"
 
 say()  { printf '\033[1m==>\033[0m %s\n' "$1"; }
@@ -42,7 +42,7 @@ usage() {
     if [ -n "$SELF" ]; then
         awk 'NR == 1 { next } /^#/ { print substr($0, 3); next } { exit }' "$SELF"
     else
-        echo "Open Look Away installer. Downloads the current release and installs it."
+        echo "OpenLookAway installer. Downloads the current release and installs it."
         echo "    --from-source   clone and build from source instead"
         echo "Every option: https://github.com/yoelgal/open-look-away/blob/main/install.sh"
     fi
@@ -57,7 +57,7 @@ for arg in "$@"; do
     esac
 done
 
-[ "$(uname -s)" = "Darwin" ] || die "Open Look Away is macOS only."
+[ "$(uname -s)" = "Darwin" ] || die "OpenLookAway is macOS only."
 major=$(sw_vers -productVersion | cut -d. -f1)
 [ "$major" -ge 13 ] || die "Needs macOS 13 or later; this is $(sw_vers -productVersion)."
 [ "$(uname -m)" = "arm64" ] || die "There is no Intel build. This Mac is $(uname -m)."
@@ -72,7 +72,7 @@ can_replace() {
 STRANDED=""
 if [ -z "${OLA_APPS:-}" ] && [ ! -w "$APPS" ]; then
     if [ -e "$APPS/$APP_NAME" ] && can_replace "$APPS/$APP_NAME"; then
-        say "$APPS needs an administrator, and Open Look Away is already installed there, so this upgrades
+        say "$APPS needs an administrator, and OpenLookAway is already installed there, so this upgrades
     that copy rather than leaving it behind. macOS will ask for your password."
     else
         [ -e "$APPS/$APP_NAME" ] && STRANDED="$APPS/$APP_NAME"
@@ -96,7 +96,7 @@ if ! mkdir "$LOCK_DIR" 2>/dev/null; then
         *) [ "$HOLDER" -ge 2 ] 2>/dev/null || HOLDER="" ;;
     esac
     if [ -n "$HOLDER" ] && kill -0 "$HOLDER" 2>/dev/null; then
-        die "Another Open Look Away install is running (process $HOLDER). Wait for that one to finish."
+        die "Another OpenLookAway install is running (process $HOLDER). Wait for that one to finish."
     fi
     rm -rf "$LOCK_DIR" 2>/dev/null || true
     mkdir "$LOCK_DIR" 2>/dev/null \
@@ -149,7 +149,7 @@ build_from_source() {
     Install them with:  xcode-select --install"
     say "Building"
     bash scripts/build-app.sh
-    STAGED="$PWD/dist/Open Look Away.app"
+    STAGED="$PWD/dist/OpenLookAway.app"
 }
 
 download_release() {
@@ -228,7 +228,7 @@ if [ -d "$APPS/$APP_NAME" ]; then
             sleep 0.25
         done
         if pgrep -f "/$APP_NAME/Contents/MacOS/OpenLookAway$" >/dev/null 2>&1; then
-            die "Open Look Away is still running. Quit it from the menu extra, then run this again."
+            die "OpenLookAway is still running. Quit it from the menu extra, then run this again."
         fi
     fi
     OLD_BUNDLE="$APPS/$APP_NAME.replaced-$$"

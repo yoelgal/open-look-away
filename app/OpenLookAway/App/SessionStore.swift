@@ -7,16 +7,25 @@ final class SessionStore: ObservableObject {
     let engine: BreakEngine
     let pause = SmartPause()
     let overlays = OverlayController()
+    let defaults: UserDefaults
 
     private var timer: AnyCancellable?
     private var headsUp: HeadsUpController?
     private var cursor: CursorCountdownController?
     private var cancellables = Set<AnyCancellable>()
 
-    init() {
-        self.engine = BreakEngine()
+    var needsOnboarding: Bool { Onboarding.needsOnboarding(defaults: defaults) }
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        let settings = AppSettings.load(defaults: defaults)
+        self.engine = BreakEngine(settings: settings, defaults: defaults)
         overlays.onSkip = { [weak self] in self?.skipBreak() }
         overlays.onDone = { [weak self] in self?.finishBreak() }
+        if Onboarding.needsOnboarding(defaults: defaults) {
+            engine.armed = false
+            engine.parkIdle()
+        }
         engine.objectWillChange.sink { [weak self] _ in
             self?.objectWillChange.send()
         }.store(in: &cancellables)
@@ -26,8 +35,8 @@ final class SessionStore: ObservableObject {
                 self?.step(now: now)
             }
     }
-
     func step(now: Date = Date()) {
+        guard engine.armed else { return }
         var signal = pause.poll(settings: engine.settings)
         if engine.phase == .breaking || engine.phase == .headsUp || engine.phase == .cursorCountdown {
             if signal.reason == "Idle" || signal.reason == "Typing" {
@@ -36,6 +45,18 @@ final class SessionStore: ObservableObject {
         }
         engine.tick(now: now, paused: signal.paused, reason: signal.reason)
         syncChrome()
+    }
+
+    func finishOnboarding(focusMinutes: Int, shortBreakSeconds: Int, accessibilityGranted: Bool) {
+        _ = accessibilityGranted
+        var next = engine.settings
+        next.focusMinutes = focusMinutes
+        next.shortBreakSeconds = shortBreakSeconds
+        engine.updateSettings(next)
+        Onboarding.markFinished(defaults: defaults)
+        pause.retryTap()
+        engine.armed = true
+        engine.unpark()
     }
 
     func startBreakNow() {

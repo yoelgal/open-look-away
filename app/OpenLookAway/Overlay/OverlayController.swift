@@ -1,4 +1,5 @@
 import AppKit
+import QuartzCore
 import SwiftUI
 
 @MainActor
@@ -13,13 +14,39 @@ final class OverlayController {
         if windows.isEmpty || showingBeast != beast {
             build(store: store)
         }
-        for w in windows { w.orderFrontRegardless() }
+        let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        for w in windows {
+            w.alphaValue = 0
+            w.orderFrontRegardless()
+        }
+        if reduceMotion {
+            for w in windows { w.alphaValue = 1 }
+            return
+        }
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.35
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            for w in windows { w.animator().alphaValue = 1 }
+        }
     }
 
     func hide() {
-        for w in windows { w.orderOut(nil) }
+        let closing = windows
         windows.removeAll()
         showingBeast = nil
+        let tearDown = {
+            for w in closing { w.orderOut(nil) }
+        }
+        if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
+            tearDown()
+            return
+        }
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.35
+            ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            ctx.completionHandler = tearDown
+            for w in closing { w.animator().alphaValue = 0 }
+        }
     }
 
     private func build(store: SessionStore) {

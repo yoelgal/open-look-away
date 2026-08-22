@@ -21,6 +21,10 @@ final class SmartPause {
     init() {
         installTap()
     }
+    func retryTap() {
+        if tap != nil { return }
+        installTap()
+    }
 
     deinit { if let tap { CGEvent.tapEnable(tap: tap, enable: false) } }
 

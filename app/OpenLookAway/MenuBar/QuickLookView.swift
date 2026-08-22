@@ -6,7 +6,7 @@ struct QuickLookView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Text("Open Look Away")
+            Text("OpenLookAway")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.secondary)
                 .padding(.top, 4)
@@ -22,7 +22,7 @@ struct QuickLookView: View {
         }
         .padding(22)
         .frame(width: 360)
-        .background(.ultraThinMaterial)
+        .background(Color.clear)
     }
 
     private var now: some View {

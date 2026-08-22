@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Assemble dist/Open Look Away.app from the Xcode project.
+# Assemble dist/OpenLookAway.app from the Xcode project.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -15,7 +15,7 @@ fi
 [ -n "$VERSION" ] || VERSION="0.0.0"
 
 DD="$ROOT/.build/dd"
-DEST="$ROOT/dist/Open Look Away.app"
+DEST="$ROOT/dist/OpenLookAway.app"
 mkdir -p "$ROOT/dist" "$DD"
 
 echo "==> building $VERSION"
@@ -37,11 +37,11 @@ BUILT="$DD/Build/Products/Release/OpenLookAway.app"
 rm -rf "$DEST"
 ditto "$BUILT" "$DEST"
 
-# Display name with spaces; the product name stays OpenLookAway for the executable.
-/usr/libexec/PlistBuddy -c "Set :CFBundleName Open Look Away" "$DEST/Contents/Info.plist" 2>/dev/null \
-    || /usr/libexec/PlistBuddy -c "Add :CFBundleName string Open Look Away" "$DEST/Contents/Info.plist"
-/usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName Open Look Away" "$DEST/Contents/Info.plist" 2>/dev/null \
-    || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string Open Look Away" "$DEST/Contents/Info.plist"
+# Display name matches the product name OpenLookAway.
+/usr/libexec/PlistBuddy -c "Set :CFBundleName OpenLookAway" "$DEST/Contents/Info.plist" 2>/dev/null \
+    || /usr/libexec/PlistBuddy -c "Add :CFBundleName string OpenLookAway" "$DEST/Contents/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName OpenLookAway" "$DEST/Contents/Info.plist" 2>/dev/null \
+    || /usr/libexec/PlistBuddy -c "Add :CFBundleDisplayName string OpenLookAway" "$DEST/Contents/Info.plist"
 /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$DEST/Contents/Info.plist"
 
 codesign --force --deep --sign - "$DEST" || die "codesign failed"

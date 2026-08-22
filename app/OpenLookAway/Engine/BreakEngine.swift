@@ -3,7 +3,7 @@ import Foundation
 @MainActor
 final class BreakEngine: ObservableObject {
     @Published var settings: AppSettings {
-        didSet { settings.save() }
+        didSet { settings.save(defaults: defaults) }
     }
     @Published private(set) var phase: Phase = .focusing
     @Published private(set) var breakKind: BreakKind = .short
@@ -16,10 +16,13 @@ final class BreakEngine: ObservableObject {
     @Published private(set) var skipUnlockedAt: Date?
     @Published var statsFocusSecondsToday: TimeInterval = 0
     @Published var statsBreaksToday: Int = 0
+    var armed: Bool = true
 
     private var snoozeDay: Date?
+    private let defaults: UserDefaults
 
-    init(settings: AppSettings = .load()) {
+    init(settings: AppSettings = .load(), defaults: UserDefaults = .standard) {
+        self.defaults = defaults
         self.settings = settings
         self.remainingFocus = settings.focusDuration
     }
@@ -30,6 +33,7 @@ final class BreakEngine: ObservableObject {
     }
 
     func tick(now: Date, paused: Bool, reason: String?, step: TimeInterval = 1) {
+        guard armed else { return }
         rollSnoozeDay(now)
         if !OfficeHours.contains(now, settings) {
             phase = .idle
@@ -115,6 +119,15 @@ final class BreakEngine: ObservableObject {
     func updateSettings(_ next: AppSettings) {
         settings = next
         remainingFocus = max(0, settings.focusDuration - focusedSeconds)
+    }
+    func parkIdle() {
+        phase = .idle
+        lastPauseReason = nil
+    }
+
+    func unpark() {
+        phase = .focusing
+        lastPauseReason = nil
     }
 
     func debugJumpToHeadsUp() {

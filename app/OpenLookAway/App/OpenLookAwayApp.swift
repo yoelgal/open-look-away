@@ -18,13 +18,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = SessionStore()
     private var item: NSStatusItem?
     private var panel: NSPanel?
+    private var onboarding: OnboardingWindowController?
     private var cancellables = Set<AnyCancellable>()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.autosaveName = "ola.status"
-        item.button?.image = NSImage(systemSymbolName: "circle", accessibilityDescription: "Open Look Away")
+        item.button?.image = NSImage(systemSymbolName: "circle", accessibilityDescription: "OpenLookAway")
         item.button?.imagePosition = .imageLeading
         item.button?.font = .monospacedDigitSystemFont(ofSize: 12, weight: .regular)
         item.button?.target = self
@@ -35,6 +36,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.refreshTitle()
         }.store(in: &cancellables)
         refreshTitle()
+        if store.needsOnboarding {
+            let controller = OnboardingWindowController()
+            onboarding = controller
+            controller.show(store: store) { [weak self] in
+                self?.onboarding = nil
+            }
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -62,12 +70,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
             panel.isFloatingPanel = true
             panel.level = .statusBar
-            panel.isOpaque = false
-            panel.backgroundColor = .clear
             panel.hasShadow = true
             panel.hidesOnDeactivate = false
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-            panel.contentView = NSHostingView(rootView: QuickLookView(store: store))
+            panel.installGlassHost(QuickLookView(store: store), cornerRadius: 18)
             self.panel = panel
         }
         guard let panel, let button = item?.button, let buttonWindow = button.window else { return }
@@ -90,7 +96,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item?.button?.title = text
         item?.button?.image = NSImage(
             systemSymbolName: iconName,
-            accessibilityDescription: "Open Look Away"
+            accessibilityDescription: "OpenLookAway"
         )
     }
 

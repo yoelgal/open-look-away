@@ -48,16 +48,16 @@ struct AppSettings: Codable, Equatable {
 
     static let storageKey = "ola.settings.v1"
 
-    static func load() -> AppSettings {
-        guard let data = UserDefaults.standard.data(forKey: storageKey),
+    static func load(defaults: UserDefaults = .standard) -> AppSettings {
+        guard let data = defaults.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode(AppSettings.self, from: data)
         else { return AppSettings() }
         return decoded
     }
 
-    func save() {
+    func save(defaults: UserDefaults = .standard) {
         if let data = try? JSONEncoder().encode(self) {
-            UserDefaults.standard.set(data, forKey: Self.storageKey)
+            defaults.set(data, forKey: Self.storageKey)
         }
     }
 }

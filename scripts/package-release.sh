@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Packages dist/Open Look Away.app into the two files a GitHub release carries.
+# Packages dist/OpenLookAway.app into the two files a GitHub release carries.
 #
 #   scripts/build-app.sh && scripts/package-release.sh
 #
@@ -9,7 +9,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-APP="$ROOT/dist/Open Look Away.app"
+APP="$ROOT/dist/OpenLookAway.app"
 ZIP="$ROOT/dist/OpenLookAway-arm64.zip"
 DIGEST="$ZIP.sha256"
 
@@ -29,8 +29,8 @@ ditto -c -k --sequesterRsrc --keepParent "$APP" "$ZIP" || die "ditto could not a
 CHECK="$(mktemp -d)"
 trap 'rm -rf "$CHECK"' EXIT
 ditto -x -k "$ZIP" "$CHECK" || die "the zip just written does not extract"
-[ -d "$CHECK/Open Look Away.app" ] || die "the zip does not contain Open Look Away.app at its root"
-codesign --verify --strict "$CHECK/Open Look Away.app" \
+[ -d "$CHECK/OpenLookAway.app" ] || die "the zip does not contain OpenLookAway.app at its root"
+codesign --verify --strict "$CHECK/OpenLookAway.app" \
     || die "the extracted bundle fails codesign. Do not ship this."
 
 echo "    version   $VERSION"

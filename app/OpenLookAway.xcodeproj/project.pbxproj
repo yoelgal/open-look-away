@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		A10000000000000100000001 /* OpenLookAwayApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000001 /* OpenLookAwayApp.swift */; };
 		A10000000000000100000002 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000002 /* SessionStore.swift */; };
+		A10000000000000100000016 /* Onboarding.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000016 /* Onboarding.swift */; };
+		A10000000000000100000017 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000017 /* OnboardingView.swift */; };
+		A10000000000000100000019 /* OpaqueGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000019 /* OpaqueGlass.swift */; };
 		A10000000000000100000003 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000003 /* AppSettings.swift */; };
 		A10000000000000100000004 /* BreakEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000004 /* BreakEngine.swift */; };
 		A10000000000000100000005 /* OfficeHours.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000005 /* OfficeHours.swift */; };
@@ -24,6 +27,7 @@
 		A1000000000000010000000F /* SmartPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000010000000F /* SmartPause.swift */; };
 		A10000000000000100000010 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000010 /* Assets.xcassets */; };
 		A10000000000000100000011 /* BreakEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000011 /* BreakEngineTests.swift */; };
+		A10000000000000100000018 /* OnboardingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000018 /* OnboardingTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -39,6 +43,9 @@
 /* Begin PBXFileReference section */
 		B10000000000000100000001 /* OpenLookAwayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLookAwayApp.swift; sourceTree = "<group>"; };
 		B10000000000000100000002 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		B10000000000000100000016 /* Onboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboarding.swift; sourceTree = "<group>"; };
+		B10000000000000100000017 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		B10000000000000100000019 /* OpaqueGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpaqueGlass.swift; sourceTree = "<group>"; };
 		B10000000000000100000003 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		B10000000000000100000004 /* BreakEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakEngine.swift; sourceTree = "<group>"; };
 		B10000000000000100000005 /* OfficeHours.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeHours.swift; sourceTree = "<group>"; };
@@ -54,6 +61,7 @@
 		B1000000000000010000000F /* SmartPause.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartPause.swift; sourceTree = "<group>"; };
 		B10000000000000100000010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B10000000000000100000011 /* BreakEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakEngineTests.swift; sourceTree = "<group>"; };
+		B10000000000000100000018 /* OnboardingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingTests.swift; sourceTree = "<group>"; };
 		B10000000000000100000012 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B10000000000000100000013 /* OpenLookAway.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpenLookAway.entitlements; sourceTree = "<group>"; };
 		B10000000000000100000014 /* OpenLookAway.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenLookAway.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -107,6 +115,9 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000100000001 /* OpenLookAwayApp.swift */,
+				B10000000000000100000016 /* Onboarding.swift */,
+				B10000000000000100000017 /* OnboardingView.swift */,
+				B10000000000000100000019 /* OpaqueGlass.swift */,
 				B10000000000000100000002 /* SessionStore.swift */,
 				B10000000000000100000012 /* Info.plist */,
 				B10000000000000100000013 /* OpenLookAway.entitlements */,
@@ -156,6 +167,7 @@
 			isa = PBXGroup;
 			children = (
 				B10000000000000100000011 /* BreakEngineTests.swift */,
+				B10000000000000100000018 /* OnboardingTests.swift */,
 			);
 			path = OpenLookAwayTests;
 			sourceTree = "<group>";
@@ -286,6 +298,9 @@
 			files = (
 				A10000000000000100000001 /* OpenLookAwayApp.swift in Sources */,
 				A10000000000000100000002 /* SessionStore.swift in Sources */,
+				A10000000000000100000016 /* Onboarding.swift in Sources */,
+				A10000000000000100000017 /* OnboardingView.swift in Sources */,
+				A10000000000000100000019 /* OpaqueGlass.swift in Sources */,
 				A10000000000000100000003 /* AppSettings.swift in Sources */,
 				A10000000000000100000004 /* BreakEngine.swift in Sources */,
 				A10000000000000100000005 /* OfficeHours.swift in Sources */,
@@ -307,6 +322,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000100000011 /* BreakEngineTests.swift in Sources */,
+				A10000000000000100000018 /* OnboardingTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

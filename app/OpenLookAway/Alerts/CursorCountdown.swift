@@ -20,12 +20,10 @@ final class CursorCountdownController {
             )
             panel.isFloatingPanel = true
             panel.level = .statusBar
-            panel.isOpaque = false
-            panel.backgroundColor = .clear
             panel.hasShadow = true
             panel.ignoresMouseEvents = true
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-            panel.contentView = NSHostingView(rootView: CursorCountdownView(store: store))
+            panel.installGlassHost(CursorCountdownView(store: store))
             window = panel
         }
         window?.orderFrontRegardless()
@@ -58,7 +56,9 @@ struct CursorCountdownView: View {
             .font(.system(size: 28, weight: .semibold, design: .rounded))
             .monospacedDigit()
             .frame(width: 64, height: 64)
-            .background(.ultraThinMaterial, in: Circle())
+            .background {
+                OpaqueGlass().clipShape(Circle())
+            }
     }
 
     private var seconds: Int {

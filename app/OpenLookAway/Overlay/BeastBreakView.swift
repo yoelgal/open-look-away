@@ -39,7 +39,7 @@ struct BeastBreakView: View {
             VStack {
                 Spacer()
                 HStack {
-                    Text("Open Look Away")
+                    Text("OpenLookAway")
                         .font(.system(size: 13))
                         .foregroundStyle(.white.opacity(0.55))
                         .padding(24)
