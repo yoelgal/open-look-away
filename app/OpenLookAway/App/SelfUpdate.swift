@@ -63,7 +63,7 @@ enum SelfUpdate {
                 #!/bin/bash
                 # Written by OpenLookAway. Safe to delete.
                 set -euo pipefail
-                echo "==> Updating OpenLookAway to \(version)"
+                \(banner(to: version, doing: "Downloading and replacing this copy"))
                 \(AppInfo.updateCommand(sourceRoot: nil))
                 echo
                 echo "  Done. This window can be closed."
@@ -80,7 +80,7 @@ enum SelfUpdate {
             # Written by OpenLookAway. Safe to delete.
             set -euo pipefail
             cd '\(quoted)'
-            echo "==> Updating OpenLookAway to \(version)"
+            \(banner(to: version, doing: "Pulling and rebuilding in $(pwd)"))
             git pull --ff-only
             ./install.sh
             echo
@@ -89,4 +89,42 @@ enum SelfUpdate {
 
             """
     }
+
+    /// Quoted heredoc so the wordmark is never expanded by the shell. `doing` is echoed below
+    /// so a `$(pwd)` in it still runs.
+    private static func banner(to version: String, doing: String) -> String {
+        """
+        cat <<'OPENLOOKAWAY'
+
+        \(wordmark)
+
+        OPENLOOKAWAY
+        echo "  \(AppInfo.version)  ─→  \(version)"
+        echo "  \(doing)"
+        echo
+        """
+    }
+
+    /// Closed-eye mark + LOOK AWAY block letters for the Terminal update window.
+    /// Eye hand-tuned; wordmark from Kimi (moonshotai/kimi-k2) then width-trimmed.
+    static let wordmark = """
+                                       .  ..  .
+                                   .-+#@@@@@@#*-.
+                                :+%@@@@@@@@@@@@%+:
+                              =%@@@@@%****%@@@@@%=
+                             -@@@@%*=:    :=*%@@@@-
+                             *@@@*:   ....   :*@@@*
+                             =@@%:  :*####*:  :%@@=
+                              +@#   +@@@@@@+   #@+
+                                =-   :%@@@@%:   -=
+                                       .*@@*.
+                                        .--.
+
+    ██╗      ██████╗  ██████╗ ██╗  ██╗ █████╗ ██╗    ██╗ █████╗ ██╗   ██╗
+    ██║     ██╔═══██╗██╔═══██╗██║ ██╔╝██╔══██╗██║    ██║██╔══██╗╚██╗ ██╔╝
+    ██║     ██║   ██║██║   ██║█████╔╝ ███████║██║ █╗ ██║███████║ ╚████╔╝
+    ██║     ██║   ██║██║   ██║██╔═██╗ ██╔══██║██║███╗██║██╔══██║  ╚██╔╝
+    ███████╗╚██████╔╝╚██████╔╝██║  ██╗██║  ██║╚███╔███╔╝██║  ██║   ██║
+    ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝   ╚═╝
+    """
 }
