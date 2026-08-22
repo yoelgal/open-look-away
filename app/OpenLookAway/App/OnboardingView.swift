@@ -102,7 +102,7 @@ struct OnboardingView: View {
                     openAtLogin = Onboarding.opensAtLogin
                 }
 
-            Text("Later: Settings → Beast turns on optional push-up breaks.")
+            Text("Turn on Beast Mode later if you want a pump on every break.")
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
                 .padding(.top, 12)
@@ -124,10 +124,12 @@ struct OnboardingView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(accent)
             }
+            .padding(.bottom, 8)
         }
         .padding(28)
         .padding(.top, 12)
-        .frame(width: 540, height: 440)
+        .padding(.bottom, 20)
+        .frame(width: 540, height: 470)
         .background(Color.clear)
         .onAppear {
             accessibilityTrusted = Onboarding.isAccessibilityTrusted
@@ -154,7 +156,7 @@ final class OnboardingWindowController: NSObject, NSWindowDelegate {
                 self?.finishFromButton()
             }
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 540, height: 460),
+                contentRect: NSRect(x: 0, y: 0, width: 540, height: 500),
                 styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
