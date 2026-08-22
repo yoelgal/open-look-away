@@ -24,7 +24,7 @@ jobs:
       - name: the bundle's version is the tag
         run: |
           STAMPED="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' \
-              "dist/Open Look Away.app/Contents/Info.plist")"
+              "dist/OpenLookAway.app/Contents/Info.plist")"
           EXPECTED="${GITHUB_REF_NAME#v}"
           [ "$STAMPED" = "$EXPECTED" ] || {
               echo "release: tag $GITHUB_REF_NAME stamped $STAMPED, expected $EXPECTED" >&2

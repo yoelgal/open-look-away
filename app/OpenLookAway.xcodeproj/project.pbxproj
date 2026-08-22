@@ -13,6 +13,10 @@
 		A10000000000000100000017 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000017 /* OnboardingView.swift */; };
 		A10000000000000100000019 /* OpaqueGlass.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000019 /* OpaqueGlass.swift */; };
 		A10000000000000100000003 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000003 /* AppSettings.swift */; };
+		A1000000000000010000001A /* UpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000010000001A /* UpdateCheck.swift */; };
+		A1000000000000010000001B /* SelfUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000010000001B /* SelfUpdate.swift */; };
+		A1000000000000010000001C /* UpdateNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000010000001C /* UpdateNotice.swift */; };
+		A1000000000000010000001D /* UpdateCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000010000001D /* UpdateCheckTests.swift */; };
 		A10000000000000100000004 /* BreakEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000004 /* BreakEngine.swift */; };
 		A10000000000000100000005 /* OfficeHours.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000005 /* OfficeHours.swift */; };
 		A10000000000000100000006 /* QuickLookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000100000006 /* QuickLookView.swift */; };
@@ -43,6 +47,10 @@
 /* Begin PBXFileReference section */
 		B10000000000000100000001 /* OpenLookAwayApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenLookAwayApp.swift; sourceTree = "<group>"; };
 		B10000000000000100000002 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		B1000000000000010000001A /* UpdateCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheck.swift; sourceTree = "<group>"; };
+		B1000000000000010000001B /* SelfUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelfUpdate.swift; sourceTree = "<group>"; };
+		B1000000000000010000001C /* UpdateNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateNotice.swift; sourceTree = "<group>"; };
+		B1000000000000010000001D /* UpdateCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckTests.swift; sourceTree = "<group>"; };
 		B10000000000000100000016 /* Onboarding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Onboarding.swift; sourceTree = "<group>"; };
 		B10000000000000100000017 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		B10000000000000100000019 /* OpaqueGlass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpaqueGlass.swift; sourceTree = "<group>"; };
@@ -118,6 +126,7 @@
 				B10000000000000100000016 /* Onboarding.swift */,
 				B10000000000000100000017 /* OnboardingView.swift */,
 				B10000000000000100000019 /* OpaqueGlass.swift */,
+				B1000000000000010000001B /* SelfUpdate.swift */,
 				B10000000000000100000002 /* SessionStore.swift */,
 				B10000000000000100000012 /* Info.plist */,
 				B10000000000000100000013 /* OpenLookAway.entitlements */,
@@ -131,6 +140,7 @@
 				B10000000000000100000003 /* AppSettings.swift */,
 				B10000000000000100000004 /* BreakEngine.swift */,
 				B10000000000000100000005 /* OfficeHours.swift */,
+				B1000000000000010000001A /* UpdateCheck.swift */,
 			);
 			path = Engine;
 			sourceTree = "<group>";
@@ -140,6 +150,7 @@
 			children = (
 				B10000000000000100000006 /* QuickLookView.swift */,
 				B10000000000000100000007 /* StatusLabel.swift */,
+				B1000000000000010000001C /* UpdateNotice.swift */,
 			);
 			path = MenuBar;
 			sourceTree = "<group>";
@@ -168,6 +179,7 @@
 			children = (
 				B10000000000000100000011 /* BreakEngineTests.swift */,
 				B10000000000000100000018 /* OnboardingTests.swift */,
+				B1000000000000010000001D /* UpdateCheckTests.swift */,
 			);
 			path = OpenLookAwayTests;
 			sourceTree = "<group>";
@@ -301,6 +313,9 @@
 				A10000000000000100000016 /* Onboarding.swift in Sources */,
 				A10000000000000100000017 /* OnboardingView.swift in Sources */,
 				A10000000000000100000019 /* OpaqueGlass.swift in Sources */,
+				A1000000000000010000001A /* UpdateCheck.swift in Sources */,
+				A1000000000000010000001B /* SelfUpdate.swift in Sources */,
+				A1000000000000010000001C /* UpdateNotice.swift in Sources */,
 				A10000000000000100000003 /* AppSettings.swift in Sources */,
 				A10000000000000100000004 /* BreakEngine.swift in Sources */,
 				A10000000000000100000005 /* OfficeHours.swift in Sources */,
@@ -323,6 +338,7 @@
 			files = (
 				A10000000000000100000011 /* BreakEngineTests.swift in Sources */,
 				A10000000000000100000018 /* OnboardingTests.swift in Sources */,
+				A1000000000000010000001D /* UpdateCheckTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -383,7 +399,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OpenLookAway/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.openlookaway.app;
 				PRODUCT_NAME = OpenLookAway;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -402,7 +418,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = OpenLookAway/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.openlookaway.app;
 				PRODUCT_NAME = OpenLookAway;
 				SWIFT_EMIT_LOC_STRINGS = YES;

@@ -15,14 +15,14 @@
 # Overrides, all optional:
 #   OLA_ASSET_URL=url     download this instead of the GitHub release (file:// works)
 #   OLA_ASSET_SHA256=hex  the expected digest, instead of fetching <asset-url>.sha256
-#   OLA_VERSION=v1.0.0    install this release rather than the latest
+#   OLA_VERSION=v0.1.0    install this release rather than the latest
 #   OLA_APPS=/path        where the .app goes                (default /Applications)
 #   OLA_SRC=/path         where --from-source clones to      (default ./open-look-away)
 #   OLA_NO_OPEN=1         install, do not launch
 #
 # On the piped command they go on `bash`, on the right of the pipe:
 #
-#   curl -fsSL …/install.sh | OLA_VERSION=v1.0.0 bash
+#   curl -fsSL …/install.sh | OLA_VERSION=v0.1.0 bash
 set -euo pipefail
 
 APPS="${OLA_APPS:-/Applications}"

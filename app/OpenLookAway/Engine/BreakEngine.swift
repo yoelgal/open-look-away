@@ -48,7 +48,7 @@ final class BreakEngine: ObservableObject {
         case .idle:
             break
         case .focusing, .headsUp, .cursorCountdown:
-            if paused {
+            if paused, reason != "Typing" {
                 phase = .paused
                 lastPauseReason = reason
                 return
@@ -57,6 +57,11 @@ final class BreakEngine: ObservableObject {
             statsFocusSecondsToday += step
             remainingFocus = max(0, settings.focusDuration - focusedSeconds)
             if remainingFocus <= 0 {
+                if paused, reason == "Typing" {
+                    remainingFocus = 0
+                    phase = .focusing
+                    return
+                }
                 beginBreak(now: now)
             } else if remainingFocus <= 8 {
                 phase = .cursorCountdown

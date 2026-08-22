@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = SessionStore()
     private var item: NSStatusItem?
     private var panel: NSPanel?
+    private var settingsWindow: NSWindow?
     private var onboarding: OnboardingWindowController?
     private var cancellables = Set<AnyCancellable>()
 
@@ -25,17 +26,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.autosaveName = "ola.status"
-        item.button?.image = NSImage(systemSymbolName: "circle", accessibilityDescription: "OpenLookAway")
-        item.button?.imagePosition = .imageLeading
-        item.button?.font = .monospacedDigitSystemFont(ofSize: 12, weight: .regular)
+        item.button?.imagePosition = .imageOnly
         item.button?.target = self
-        item.button?.action = #selector(togglePanel)
-        item.button?.sendAction(on: [.leftMouseUp])
+        item.button?.action = #selector(handleStatusClick)
+        item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         self.item = item
         store.objectWillChange.sink { [weak self] _ in
             self?.refreshTitle()
         }.store(in: &cancellables)
         refreshTitle()
+        store.openSettings = { [weak self] in self?.showSettings() }
+        store.startUpdateChecks()
         if store.needsOnboarding {
             let controller = OnboardingWindowController()
             onboarding = controller
@@ -49,7 +50,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         false
     }
 
-    @objc private func togglePanel() {
+    @objc private func handleStatusClick() {
+        if NSApp.currentEvent?.type == .rightMouseUp {
+            store.setManualPaused(!store.manualPaused)
+            return
+        }
         if NSEvent.modifierFlags.contains(.option) {
             store.jumpToHeadsUp()
         }
@@ -58,6 +63,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
         showPanel()
+    }
+    private func showSettings() {
+        panel?.orderOut(nil)
+        if settingsWindow == nil {
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 520, height: 500),
+                styleMask: [.titled, .closable, .fullSizeContentView],
+                backing: .buffered,
+                defer: false
+            )
+            window.title = "Settings"
+            window.titlebarAppearsTransparent = true
+            window.isReleasedWhenClosed = false
+            window.installGlassHost(SettingsView(store: store))
+            window.center()
+            NotificationCenter.default.addObserver(
+                forName: NSWindow.willCloseNotification,
+                object: window,
+                queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor in
+                    self?.settingsWindow = nil
+                    if self?.onboarding == nil {
+                        NSApp.setActivationPolicy(.accessory)
+                    }
+                }
+            }
+            settingsWindow = window
+        }
+        NSApp.setActivationPolicy(.regular)
+        settingsWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func showPanel() {
@@ -83,29 +120,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func refreshTitle() {
-        let phase = store.engine.phase
-        let t = phase == .breaking ? store.engine.remainingBreak : store.engine.remainingFocus
-        let s = max(0, Int(t.rounded(.down)))
-        let text: String
-        switch phase {
-        case .breaking: text = String(format: " %d:%02d", s / 60, s % 60)
-        case .idle: text = " Off"
-        case .paused: text = " Paused"
-        default: text = String(format: " %d:%02d", s / 60, s % 60)
-        }
-        item?.button?.title = text
-        item?.button?.image = NSImage(
-            systemSymbolName: iconName,
-            accessibilityDescription: "OpenLookAway"
-        )
-    }
-
-    private var iconName: String {
-        switch store.engine.phase {
-        case .breaking: return "eye"
-        case .paused, .idle: return "pause.circle"
-        case .headsUp, .cursorCountdown: return "eye.slash"
-        case .focusing: return "circle"
-        }
+        item?.button?.title = ""
+        item?.button?.imagePosition = .imageOnly
+        let image = StatusChip.image(text: StatusChip.label(for: store.engine), beast: store.engine.isBeast)
+        image.isTemplate = false
+        item?.button?.image = image
     }
 }

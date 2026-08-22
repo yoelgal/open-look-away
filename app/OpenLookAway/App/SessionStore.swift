@@ -15,6 +15,37 @@ final class SessionStore: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     var needsOnboarding: Bool { Onboarding.needsOnboarding(defaults: defaults) }
+    var manualPaused = false
+    var openSettings: () -> Void = {}
+    @Published var availableUpdate: AvailableUpdate?
+
+    func startUpdateChecks() {
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            if let update = await UpdateCheck.run(
+                .launch, defaults: self.defaults, currentVersion: AppInfo.version
+            ).available {
+                self.availableUpdate = update
+            }
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64(UpdateCheck.interval * 1_000_000_000))
+                guard !Task.isCancelled else { return }
+                if let update = await UpdateCheck.run(
+                    .periodic, defaults: self.defaults, currentVersion: AppInfo.version
+                ).available {
+                    self.availableUpdate = update
+                }
+            }
+        }
+    }
+
+    func checkForUpdates() async -> UpdateCheck.Outcome {
+        let outcome = await UpdateCheck.run(
+            .manual, defaults: defaults, currentVersion: AppInfo.version
+        )
+        if let update = outcome.available { availableUpdate = update }
+        return outcome
+    }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -38,13 +69,28 @@ final class SessionStore: ObservableObject {
     func step(now: Date = Date()) {
         guard engine.armed else { return }
         var signal = pause.poll(settings: engine.settings)
+        if manualPaused {
+            signal = PauseSignal(paused: true, reason: "Paused")
+        }
         if engine.phase == .breaking || engine.phase == .headsUp || engine.phase == .cursorCountdown {
             if signal.reason == "Idle" || signal.reason == "Typing" {
                 signal = PauseSignal(paused: false, reason: nil)
             }
         }
+        if manualPaused, engine.phase == .breaking {
+            engine.endBreak()
+        }
         engine.tick(now: now, paused: signal.paused, reason: signal.reason)
         syncChrome()
+    }
+
+    func setManualPaused(_ on: Bool) {
+        manualPaused = on
+        if on, engine.phase == .breaking {
+            engine.endBreak()
+        }
+        objectWillChange.send()
+        step()
     }
 
     func finishOnboarding(focusMinutes: Int, shortBreakSeconds: Int, accessibilityGranted: Bool) {

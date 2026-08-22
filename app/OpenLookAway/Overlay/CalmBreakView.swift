@@ -5,54 +5,39 @@ struct CalmBreakView: View {
     var onSkip: () -> Void
 
     var body: some View {
-        ZStack {
-            Color(red: 0.07, green: 0.10, blue: 0.16).ignoresSafeArea()
-            VStack(spacing: 18) {
-                ZStack {
-                    Circle()
-                        .stroke(Color.white.opacity(0.12), lineWidth: 6)
-                        .frame(width: 280, height: 280)
-                    Circle()
-                        .trim(from: 0, to: progress)
-                        .stroke(Color.white.opacity(0.85), style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                        .frame(width: 280, height: 280)
-                    Text("\(seconds)")
-                        .font(.system(size: 140, weight: .regular, design: .rounded))
-                        .foregroundStyle(.white)
-                        .monospacedDigit()
-                }
-                Text("Look away.")
-                    .font(.system(size: 28, weight: .regular))
-                    .foregroundStyle(.white.opacity(0.9))
-            }
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    if canSkip {
-                        Button("skip", action: onSkip)
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.white.opacity(0.5))
-                            .font(.system(size: 16))
-                            .padding(28)
-                    }
-                }
+        BreakStage(
+            title: "Look away.",
+            subtitle: "Rest your eyes on something far until the countdown ends.",
+            countdown: clock,
+            clock: now,
+            snoozesLeft: max(0, store.engine.settings.snoozesPerDay - store.engine.snoozesUsedToday),
+            skipTitle: canSkip ? "Skip Break" : nil,
+            doneTitle: nil,
+            onSkip: canSkip ? onSkip : nil,
+            onDone: nil
+        ) {
+            ZStack {
+                Image("CalmHorizon")
+                    .resizable()
+                    .scaledToFill()
+                LinearGradient(
+                    colors: [.black.opacity(0.08), .black.opacity(0.35)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var seconds: Int {
-        max(0, Int(store.engine.remainingBreak.rounded(.up)))
+    private var clock: String {
+        let s = max(0, Int(store.engine.remainingBreak.rounded(.up)))
+        return String(format: "%02d:%02d", s / 60, s % 60)
     }
 
-    private var progress: CGFloat {
-        let total = store.engine.breakKind == .long
-            ? store.engine.settings.longDuration
-            : store.engine.settings.shortDuration
-        guard total > 0 else { return 0 }
-        return CGFloat(store.engine.remainingBreak / total)
+    private var now: String {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        return f.string(from: Date())
     }
 
     private var canSkip: Bool {
@@ -62,5 +47,94 @@ struct CalmBreakView: View {
             unlockedAt: store.engine.skipUnlockedAt,
             inBreak: true
         )
+    }
+}
+
+struct BreakStage<Background: View>: View {
+    var title: String
+    var subtitle: String
+    var countdown: String
+    var clock: String
+    var snoozesLeft: Int
+    var skipTitle: String?
+    var doneTitle: String?
+    var onSkip: (() -> Void)?
+    var onDone: (() -> Void)?
+    @ViewBuilder var background: () -> Background
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack {
+                background()
+                    .frame(width: geo.size.width, height: geo.size.height)
+                    .clipped()
+
+                VStack(spacing: 0) {
+                    Text(title)
+                        .font(.system(size: 48, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 48)
+                    Text(subtitle)
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(.white.opacity(0.82))
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 14)
+                        .padding(.horizontal, 72)
+                    Rectangle()
+                        .fill(.white.opacity(0.28))
+                        .frame(width: 48, height: 1)
+                        .padding(.top, 28)
+                        .padding(.bottom, 22)
+                    Text(countdown)
+                        .font(.system(size: 64, weight: .regular, design: .rounded))
+                        .foregroundStyle(.white.opacity(0.95))
+                        .monospacedDigit()
+                }
+                .frame(width: geo.size.width, height: geo.size.height)
+
+                VStack {
+                    HStack(spacing: 6) {
+                        Image(systemName: "clock")
+                        Text(clock)
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.85))
+                    .padding(.top, 36)
+                    Spacer()
+                    HStack(spacing: 14) {
+                        if let skipTitle, let onSkip {
+                            pill(skipTitle, systemImage: "forward.fill", action: onSkip)
+                        }
+                        if let doneTitle, let onDone {
+                            pill(doneTitle, systemImage: "checkmark", action: onDone)
+                        }
+                    }
+                    Text("\(snoozesLeft) snoozes available")
+                        .font(.system(size: 13))
+                        .foregroundStyle(.white.opacity(0.55))
+                        .padding(.top, 16)
+                        .padding(.bottom, 40)
+                }
+                .frame(width: geo.size.width, height: geo.size.height)
+            }
+        }
+        .ignoresSafeArea()
+    }
+
+    private func pill(_ title: String, systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                Image(systemName: systemImage)
+                Text(title)
+            }
+            .font(.system(size: 16, weight: .medium))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 12)
+            .background(.white.opacity(0.16), in: Capsule())
+            .overlay(Capsule().stroke(.white.opacity(0.22), lineWidth: 1))
+        }
+        .buttonStyle(.plain)
     }
 }

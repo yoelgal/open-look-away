@@ -6,10 +6,24 @@ struct QuickLookView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Text("OpenLookAway")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.secondary)
-                .padding(.top, 4)
+            ZStack {
+                Text("OpenLookAway")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+                HStack {
+                    Spacer()
+                    Button {
+                        store.openSettings()
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Settings")
+                }
+            }
+            .padding(.top, 4)
 
             Picker("", selection: $tab) {
                 Text("Now").tag(0)
@@ -18,10 +32,16 @@ struct QuickLookView: View {
             .pickerStyle(.segmented)
             .frame(width: 160)
 
-            if tab == 0 { now } else { stats }
+            Group {
+                if tab == 0 { now } else { stats }
+            }
+            .frame(maxWidth: .infinity, minHeight: 280, maxHeight: 280, alignment: .top)
+            if let update = store.availableUpdate {
+                UpdateNotice(update: update)
+            }
         }
         .padding(22)
-        .frame(width: 360)
+        .frame(width: 360, height: 400)
         .background(Color.clear)
     }
 
@@ -54,12 +74,22 @@ struct QuickLookView: View {
                 Text(store.engine.isBeast ? "Beast Mode is ON" : "Beast Mode is OFF")
                     .font(.system(size: 14, weight: .medium))
                 Spacer()
-                Toggle("", isOn: Binding(
-                    get: { store.engine.settings.beastModeEnabled },
-                    set: { store.engine.setBeast($0) }
-                ))
-                .toggleStyle(.switch)
-                .labelsHidden()
+                Button {
+                    store.engine.setBeast(!store.engine.settings.beastModeEnabled)
+                } label: {
+                    Capsule()
+                        .fill(store.engine.isBeast
+                              ? Color(red: 1, green: 0.45, blue: 0.18)
+                              : Color.white.opacity(0.18))
+                        .frame(width: 40, height: 24)
+                        .overlay(alignment: store.engine.isBeast ? .trailing : .leading) {
+                            Circle()
+                                .fill(.white)
+                                .frame(width: 20, height: 20)
+                                .padding(2)
+                        }
+                }
+                .buttonStyle(.plain)
             }
             .padding(.top, 6)
         }

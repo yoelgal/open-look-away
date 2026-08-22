@@ -1,4 +1,5 @@
 import AppKit
+import CoreGraphics
 import QuartzCore
 import SwiftUI
 
@@ -8,12 +9,16 @@ final class OverlayController {
     var onDone: () -> Void = {}
     private var windows: [NSWindow] = []
     private var showingBeast: Bool?
+    private var visible = false
 
     func show(store: SessionStore) {
         let beast = store.engine.settings.beastModeEnabled
         if windows.isEmpty || showingBeast != beast {
             build(store: store)
+            visible = false
         }
+        guard !visible else { return }
+        visible = true
         let reduceMotion = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
         for w in windows {
             w.alphaValue = 0
@@ -31,6 +36,7 @@ final class OverlayController {
     }
 
     func hide() {
+        visible = false
         let closing = windows
         windows.removeAll()
         showingBeast = nil
@@ -53,23 +59,30 @@ final class OverlayController {
         for w in windows { w.orderOut(nil) }
         windows.removeAll()
         showingBeast = store.engine.settings.beastModeEnabled
+        let shield = NSWindow.Level(rawValue: Int(CGShieldingWindowLevel()))
         for screen in NSScreen.screens {
-            let win = NSWindow(
+            let win = NSPanel(
                 contentRect: screen.frame,
-                styleMask: [.borderless],
+                styleMask: [.borderless, .nonactivatingPanel],
                 backing: .buffered,
-                defer: false,
-                screen: screen
+                defer: false
             )
             win.setFrame(screen.frame, display: true)
             win.isOpaque = true
             win.backgroundColor = .black
-            win.level = .screenSaver
-            win.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+            win.level = shield
+            win.collectionBehavior = [
+                .canJoinAllSpaces,
+                .fullScreenAuxiliary,
+                .stationary,
+                .ignoresCycle
+            ]
+            win.hidesOnDeactivate = false
             win.ignoresMouseEvents = false
             win.hasShadow = false
             win.isReleasedWhenClosed = false
             win.animationBehavior = .none
+            win.becomesKeyOnlyIfNeeded = true
             let root: AnyView = store.engine.settings.beastModeEnabled
                 ? AnyView(BeastBreakView(
                     store: store,
@@ -81,7 +94,7 @@ final class OverlayController {
                     onSkip: { [weak self] in self?.onSkip() }
                 ))
             let host = NSHostingController(rootView: root)
-            host.view.frame = screen.frame
+            host.view.frame = NSRect(origin: .zero, size: screen.frame.size)
             win.contentViewController = host
             windows.append(win)
         }

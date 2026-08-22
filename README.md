@@ -13,7 +13,7 @@ It needs macOS 13 or later on Apple Silicon. The app is not notarized. `curl` do
 To pin a release:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/yoelgal/open-look-away/main/install.sh | OLA_VERSION=v1.0.0 bash
+curl -fsSL https://raw.githubusercontent.com/yoelgal/open-look-away/main/install.sh | OLA_VERSION=v0.1.0 bash
 ```
 
 To build from source:

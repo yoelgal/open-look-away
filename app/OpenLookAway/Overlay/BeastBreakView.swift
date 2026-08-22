@@ -6,55 +6,39 @@ struct BeastBreakView: View {
     var onSkip: () -> Void
 
     var body: some View {
-        ZStack {
-            Image("BeastFire")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
-            LinearGradient(
-                colors: [.black.opacity(0.15), .black.opacity(0.55)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-
-            VStack(spacing: 8) {
-                Spacer()
-                Text("\(store.engine.settings.beastPushUps)")
-                    .font(.system(size: 180, weight: .bold))
-                    .foregroundStyle(.white)
-                Text("push-ups")
-                    .font(.system(size: 42, weight: .regular))
-                    .foregroundStyle(.white)
-                    .padding(.bottom, 36)
-                Button("Done", action: onDone)
-                    .buttonStyle(.plain)
-                    .font(.system(size: 22, weight: .medium))
-                    .foregroundStyle(.white)
-                    .frame(width: 220, height: 56)
-                    .background(.white.opacity(0.18), in: RoundedRectangle(cornerRadius: 12))
-                Spacer()
-            }
-
-            VStack {
-                Spacer()
-                HStack {
-                    Text("OpenLookAway")
-                        .font(.system(size: 13))
-                        .foregroundStyle(.white.opacity(0.55))
-                        .padding(24)
-                    Spacer()
-                    if canSkip {
-                        Button("skip", action: onSkip)
-                            .buttonStyle(.plain)
-                            .foregroundStyle(.white.opacity(0.55))
-                            .font(.system(size: 16))
-                            .padding(28)
-                    }
-                }
+        BreakStage(
+            title: "On your feet.",
+            subtitle: "\(store.engine.settings.beastPushUps) push-ups. Honor system.",
+            countdown: clock,
+            clock: now,
+            snoozesLeft: max(0, store.engine.settings.snoozesPerDay - store.engine.snoozesUsedToday),
+            skipTitle: canSkip ? "Skip Break" : nil,
+            doneTitle: "Done",
+            onSkip: canSkip ? onSkip : nil,
+            onDone: onDone
+        ) {
+            ZStack {
+                Image("BeastGlow")
+                    .resizable()
+                    .scaledToFill()
+                LinearGradient(
+                    colors: [.black.opacity(0.15), .black.opacity(0.4)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var clock: String {
+        let s = max(0, Int(store.engine.remainingBreak.rounded(.up)))
+        return String(format: "%02d:%02d", s / 60, s % 60)
+    }
+
+    private var now: String {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm"
+        return f.string(from: Date())
     }
 
     private var canSkip: Bool {

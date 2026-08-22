@@ -2,15 +2,35 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var store: SessionStore
+    @State private var tab = 0
     @State private var denylistText: String = ""
+    @State private var checking = false
+    @State private var checkResult: UpdateCheck.Outcome?
 
     var body: some View {
-        TabView {
-            breaks.tabItem { Label("Breaks", systemImage: "eye") }
-            pause.tabItem { Label("Smart Pause", systemImage: "pause.circle") }
-            beast.tabItem { Label("Beast Mode", systemImage: "flame") }
+        VStack(spacing: 16) {
+            Picker("", selection: $tab) {
+                Text("Breaks").tag(0)
+                Text("Pause").tag(1)
+                Text("Beast").tag(2)
+                Text("Updates").tag(3)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 24)
+
+            Group {
+                switch tab {
+                case 1: pause
+                case 2: beast
+                case 3: about
+                default: breaks
+                }
+            }
         }
-        .frame(width: 520, height: 460)
+        .padding(.top, 48)
+        .padding(.bottom, 16)
+        .frame(width: 520, height: 520)
+        .background(Color.clear)
         .onAppear { denylistText = store.engine.settings.denylistBundleIDs.joined(separator: "\n") }
     }
 
@@ -23,65 +43,131 @@ struct SettingsView: View {
 
     private var breaks: some View {
         Form {
-            Section("Focus") {
-                Stepper("Show after \(store.engine.settings.focusMinutes) min", value: settings.focusMinutes, in: 1...120)
-                Stepper("Short break \(store.engine.settings.shortBreakSeconds)s", value: settings.shortBreakSeconds, in: 5...120)
-                Stepper("Long break \(store.engine.settings.longBreakMinutes) min every \(store.engine.settings.longBreakEvery)", value: settings.longBreakMinutes, in: 1...30)
-                Stepper("Long every \(store.engine.settings.longBreakEvery) shorts", value: settings.longBreakEvery, in: 2...12)
+            Section("Timing") {
+                Stepper("Focus  \(store.engine.settings.focusMinutes) min", value: settings.focusMinutes, in: 1...120)
+                Stepper("Short break  \(store.engine.settings.shortBreakSeconds)s", value: settings.shortBreakSeconds, in: 5...120)
+                Stepper("Long break  \(store.engine.settings.longBreakMinutes) min", value: settings.longBreakMinutes, in: 1...30)
+                Stepper("Long every  \(store.engine.settings.longBreakEvery) shorts", value: settings.longBreakEvery, in: 2...12)
             }
             Section("Skip") {
                 Picker("Discipline", selection: settings.skipStyle) {
                     ForEach(SkipStyle.allCases) { style in
-                        Text("\(style.title) — \(style.subtitle)").tag(style)
+                        Text(style.title).tag(style)
                     }
                 }
-                Stepper("Snoozes per day \(store.engine.settings.snoozesPerDay)", value: settings.snoozesPerDay, in: 0...20)
+                Text(store.engine.settings.skipStyle.subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Stepper("Snoozes  \(store.engine.settings.snoozesPerDay) / day", value: settings.snoozesPerDay, in: 0...20)
             }
             Section("Office hours") {
-                Toggle("Limit to office hours", isOn: settings.officeHoursEnabled)
-                Stepper("Start \(pad(store.engine.settings.officeStartHour)):\(pad(store.engine.settings.officeStartMinute))", value: settings.officeStartHour, in: 0...23)
-                Stepper("Start minute \(pad(store.engine.settings.officeStartMinute))", value: settings.officeStartMinute, in: 0...59, step: 15)
-                Stepper("End \(pad(store.engine.settings.officeEndHour)):\(pad(store.engine.settings.officeEndMinute))", value: settings.officeEndHour, in: 0...23)
-                Stepper("End minute \(pad(store.engine.settings.officeEndMinute))", value: settings.officeEndMinute, in: 0...59, step: 15)
-                Toggle("Weekdays only", isOn: settings.officeWeekdaysOnly)
+                Toggle("Only during office hours", isOn: settings.officeHoursEnabled)
+                if store.engine.settings.officeHoursEnabled {
+                    Stepper(
+                        "Start  \(pad(store.engine.settings.officeStartHour)):\(pad(store.engine.settings.officeStartMinute))",
+                        value: settings.officeStartHour, in: 0...23
+                    )
+                    Stepper(
+                        "End  \(pad(store.engine.settings.officeEndHour)):\(pad(store.engine.settings.officeEndMinute))",
+                        value: settings.officeEndHour, in: 0...23
+                    )
+                    Toggle("Weekdays only", isOn: settings.officeWeekdaysOnly)
+                }
             }
         }
         .formStyle(.grouped)
-        .padding()
+        .scrollContentBackground(.hidden)
     }
 
     private var pause: some View {
         Form {
-            Toggle("Typing or dragging", isOn: settings.pauseTyping)
-            Toggle("Idle / away", isOn: settings.pauseIdle)
-            Toggle("Mic or camera (meetings)", isOn: settings.pauseMeetings)
-            Toggle("Video playback", isOn: settings.pauseVideo)
-            Toggle("App denylist", isOn: settings.pauseDenylist)
-            Stepper("Idle after \(Int(store.engine.settings.idleThresholdSeconds))s", value: settings.idleThresholdSeconds, in: 15...600, step: 15)
-            Section("Denylist bundle IDs") {
-                TextEditor(text: $denylistText)
-                    .font(.system(.body, design: .monospaced))
-                    .frame(minHeight: 80)
-                    .onChange(of: denylistText) { text in
-                        var next = store.engine.settings
-                        next.denylistBundleIDs = text.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-                        store.engine.updateSettings(next)
-                    }
+            Section("Hold the break when") {
+                Toggle("Typing or dragging", isOn: settings.pauseTyping)
+                Toggle("Idle", isOn: settings.pauseIdle)
+                Toggle("Meeting (mic or camera)", isOn: settings.pauseMeetings)
+                Toggle("Video playback", isOn: settings.pauseVideo)
+                Toggle("Listed apps", isOn: settings.pauseDenylist)
+                if store.engine.settings.pauseIdle {
+                    Stepper(
+                        "Idle after  \(Int(store.engine.settings.idleThresholdSeconds))s",
+                        value: settings.idleThresholdSeconds, in: 15...600, step: 15
+                    )
+                }
+            }
+            if store.engine.settings.pauseDenylist {
+                Section("App bundle IDs") {
+                    TextEditor(text: $denylistText)
+                        .font(.system(.body, design: .monospaced))
+                        .frame(minHeight: 80)
+                        .onChange(of: denylistText) { text in
+                            var next = store.engine.settings
+                            next.denylistBundleIDs = text.split(separator: "\n").map {
+                                $0.trimmingCharacters(in: .whitespaces)
+                            }.filter { !$0.isEmpty }
+                            store.engine.updateSettings(next)
+                        }
+                }
             }
         }
         .formStyle(.grouped)
-        .padding()
+        .scrollContentBackground(.hidden)
     }
 
     private var beast: some View {
         Form {
-            Toggle("Beast Mode", isOn: settings.beastModeEnabled)
-            Stepper("Push-ups \(store.engine.settings.beastPushUps)", value: settings.beastPushUps, in: 1...100)
-            Text("Honor system. Tap Done when finished. No camera counting.")
-                .foregroundStyle(.secondary)
+            Section {
+                Toggle("Beast Mode", isOn: settings.beastModeEnabled)
+                    .tint(Color(red: 1, green: 0.45, blue: 0.18))
+                if store.engine.settings.beastModeEnabled {
+                    Stepper("Push-ups  \(store.engine.settings.beastPushUps)", value: settings.beastPushUps, in: 1...100)
+                }
+            } footer: {
+                Text("Honor system. Tap Done when finished.")
+            }
         }
         .formStyle(.grouped)
-        .padding()
+        .scrollContentBackground(.hidden)
+    }
+
+    private var about: some View {
+        Form {
+            Section {
+                LabeledContent("Version", value: AppInfo.version)
+                Button(checking ? "Checking…" : "Check for updates") {
+                    checking = true
+                    checkResult = nil
+                    Task {
+                        checkResult = await store.checkForUpdates()
+                        checking = false
+                    }
+                }
+                .disabled(checking)
+                if let checkResult {
+                    switch checkResult {
+                    case .update(let update):
+                        Text("Version \(update.version) is available.")
+                            .foregroundStyle(.secondary)
+                    case .upToDate:
+                        Text("You are up to date.")
+                            .foregroundStyle(.secondary)
+                    case .failed(let why):
+                        Text(why).foregroundStyle(.orange)
+                    case .skipped:
+                        EmptyView()
+                    }
+                }
+            }
+            Section {
+                Toggle("Check automatically", isOn: Binding(
+                    get: { UpdateCheck.isEnabled(store.defaults) },
+                    set: { UpdateCheck.setEnabled($0, defaults: store.defaults) }
+                ))
+            } footer: {
+                Text("Asks GitHub once a day. Sends nothing about you.")
+            }
+        }
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
     }
 
     private func pad(_ n: Int) -> String { String(format: "%02d", n) }

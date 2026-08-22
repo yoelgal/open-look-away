@@ -34,20 +34,31 @@ extension NSWindow {
         glass.state = .active
         glass.isEmphasized = true
         glass.autoresizingMask = [.width, .height]
+        host.autoresizingMask = [.width, .height]
+        glass.addSubview(host)
+
+        let clip = NSView()
+        clip.wantsLayer = true
+        clip.layer?.isOpaque = false
+        clip.layer?.backgroundColor = NSColor.clear.cgColor
         if cornerRadius > 0 {
+            clip.layer?.cornerRadius = cornerRadius
+            clip.layer?.cornerCurve = .continuous
+            clip.layer?.masksToBounds = true
             glass.wantsLayer = true
             glass.layer?.cornerRadius = cornerRadius
             glass.layer?.cornerCurve = .continuous
             glass.layer?.masksToBounds = true
         }
-        host.autoresizingMask = [.width, .height]
-        glass.addSubview(host)
-        contentView = glass
+        clip.addSubview(glass)
+        contentView = clip
+        glass.frame = clip.bounds
         host.frame = glass.bounds
         isOpaque = false
         backgroundColor = .clear
         titlebarAppearsTransparent = true
         isMovableByWindowBackground = true
         hasShadow = true
+        invalidateShadow()
     }
 }

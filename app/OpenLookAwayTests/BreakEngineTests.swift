@@ -17,9 +17,16 @@ final class BreakEngineTests: XCTestCase {
         let e = BreakEngine(settings: AppSettings())
         e.tick(now: Date(), paused: false, reason: nil, step: 10)
         XCTAssertEqual(e.focusedSeconds, 10)
-        e.tick(now: Date(), paused: true, reason: "Typing", step: 10)
+        e.tick(now: Date(), paused: true, reason: "Meeting", step: 10)
         XCTAssertEqual(e.focusedSeconds, 10)
         XCTAssertEqual(e.phase, .paused)
+    }
+
+    func testTypingDoesNotFreezeClock() {
+        let e = BreakEngine(settings: AppSettings())
+        e.tick(now: Date(), paused: true, reason: "Typing", step: 10)
+        XCTAssertEqual(e.focusedSeconds, 10)
+        XCTAssertEqual(e.phase, .focusing)
     }
 
     func testHeadsUpThenBreak() {
