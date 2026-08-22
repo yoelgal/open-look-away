@@ -32,7 +32,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         self.item = item
         store.objectWillChange.sink { [weak self] _ in
-            self?.refreshTitle()
+            // objectWillChange fires before the new value is stored; refresh after.
+            DispatchQueue.main.async { self?.refreshTitle() }
         }.store(in: &cancellables)
         refreshTitle()
         store.openSettings = { [weak self] in self?.showSettings() }

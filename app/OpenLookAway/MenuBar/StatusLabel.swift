@@ -17,13 +17,40 @@ enum StatusChip {
             fill.setFill()
             pill.fill()
 
-            let face = NSRect(x: 7, y: 4, width: 14, height: 14)
+            // Beast face sits lower so horns stay inside the pill.
+            let face = NSRect(x: 7, y: beast ? 2.5 : 4, width: 14, height: 14)
             NSColor.white.setFill()
+            if beast {
+                // Bases deep in the circle; tips short enough to clear the pill edge.
+                fillHorn(
+                    tip: NSPoint(x: face.minX + 0.6, y: face.maxY + 2.6),
+                    baseL: NSPoint(x: face.minX + 2.2, y: face.maxY - 3.0),
+                    baseR: NSPoint(x: face.minX + 5.6, y: face.maxY - 1.6)
+                )
+                fillHorn(
+                    tip: NSPoint(x: face.maxX - 0.6, y: face.maxY + 2.6),
+                    baseL: NSPoint(x: face.maxX - 5.6, y: face.maxY - 1.6),
+                    baseR: NSPoint(x: face.maxX - 2.2, y: face.maxY - 3.0)
+                )
+            }
             NSBezierPath(ovalIn: face).fill()
 
             ink.setStroke()
-            strokeEye(from: NSPoint(x: face.minX + 2.4, y: face.midY + 0.4), width: 3.6)
-            strokeEye(from: NSPoint(x: face.midX + 1.2, y: face.midY + 0.4), width: 3.6)
+            if beast {
+                // Outer corners high, inner low — a sly squint, not calm closed eyes.
+                strokeSlyEye(
+                    outer: NSPoint(x: face.minX + 2.0, y: face.midY + 1.6),
+                    inner: NSPoint(x: face.minX + 5.8, y: face.midY + 0.2)
+                )
+                strokeSlyEye(
+                    outer: NSPoint(x: face.maxX - 2.0, y: face.midY + 1.6),
+                    inner: NSPoint(x: face.maxX - 5.8, y: face.midY + 0.2)
+                )
+                strokeSmile(in: face)
+            } else {
+                strokeEye(from: NSPoint(x: face.minX + 2.4, y: face.midY + 0.4), width: 3.6)
+                strokeEye(from: NSPoint(x: face.midX + 1.2, y: face.midY + 0.4), width: 3.6)
+            }
 
             let textOrigin = NSPoint(
                 x: 7 + 16 + 6,
@@ -46,6 +73,52 @@ enum StatusChip {
             to: NSPoint(x: start.x + width, y: start.y),
             controlPoint1: NSPoint(x: start.x + width * 0.3, y: start.y - 2.2),
             controlPoint2: NSPoint(x: start.x + width * 0.7, y: start.y - 2.2)
+        )
+        path.stroke()
+    }
+
+    /// Angled brow-slash: outer high → inner low.
+    private static func strokeSlyEye(outer: NSPoint, inner: NSPoint) {
+        let path = NSBezierPath()
+        path.lineWidth = 1.55
+        path.lineCapStyle = .round
+        path.move(to: outer)
+        path.curve(
+            to: inner,
+            controlPoint1: NSPoint(x: outer.x + (inner.x - outer.x) * 0.35, y: outer.y - 0.3),
+            controlPoint2: NSPoint(x: outer.x + (inner.x - outer.x) * 0.7, y: inner.y - 0.6)
+        )
+        path.stroke()
+    }
+
+    private static func fillHorn(tip: NSPoint, baseL: NSPoint, baseR: NSPoint) {
+        let path = NSBezierPath()
+        path.move(to: baseL)
+        path.curve(
+            to: tip,
+            controlPoint1: NSPoint(x: baseL.x + (tip.x - baseL.x) * 0.15, y: baseL.y + 2.4),
+            controlPoint2: NSPoint(x: tip.x - (tip.x - baseL.x) * 0.05, y: tip.y - 0.8)
+        )
+        path.curve(
+            to: baseR,
+            controlPoint1: NSPoint(x: tip.x + (baseR.x - tip.x) * 0.1, y: tip.y - 1.0),
+            controlPoint2: NSPoint(x: baseR.x - (baseR.x - tip.x) * 0.2, y: baseR.y + 2.0)
+        )
+        path.close()
+        path.fill()
+    }
+
+    private static func strokeSmile(in face: NSRect) {
+        let path = NSBezierPath()
+        path.lineWidth = 1.4
+        path.lineCapStyle = .round
+        let start = NSPoint(x: face.midX - 2.6, y: face.midY - 2.2)
+        let end = NSPoint(x: face.midX + 2.6, y: face.midY - 2.2)
+        path.move(to: start)
+        path.curve(
+            to: end,
+            controlPoint1: NSPoint(x: face.midX - 1.2, y: face.midY - 4.2),
+            controlPoint2: NSPoint(x: face.midX + 1.2, y: face.midY - 4.2)
         )
         path.stroke()
     }

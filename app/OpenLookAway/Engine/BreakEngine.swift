@@ -118,7 +118,9 @@ final class BreakEngine: ObservableObject {
     }
 
     func setBeast(_ on: Bool) {
-        settings.beastModeEnabled = on
+        var next = settings
+        next.beastModeEnabled = on
+        settings = next
     }
 
     func updateSettings(_ next: AppSettings) {
