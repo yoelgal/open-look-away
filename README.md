@@ -2,7 +2,7 @@
 
 A free, open-source Mac menu-bar break reminder. Calm by default. Beast Mode is optional honor-system push-ups.
 
-https://github.com/yoelgal/open-look-away/releases/download/v0.1.8/demo.mp4
+<video src="https://github.com/yoelgal/open-look-away/releases/download/v0.1.8/demo.mp4" controls="controls" width="100%"></video>
 
 One minute, start to finish: install, setup, typing pause, and Beast Mode.
 
