@@ -69,20 +69,29 @@ struct OnboardingView: View {
             Divider()
                 .padding(.vertical, 16)
 
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Accessibility")
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("Typing pause")
                         .font(.system(size: 13, weight: .medium))
-                    Text(accessibilityTrusted ? "Granted. Typing pause can run." : "Needed so breaks wait while you type.")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
+                    Spacer()
+                    HStack(spacing: 5) {
+                        Image(systemName: accessibilityTrusted ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                            .foregroundStyle(accessibilityTrusted ? Color(nsColor: .systemGreen) : Color(nsColor: .systemOrange))
+                        Text(accessibilityTrusted ? "Granted" : "Not granted")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(accessibilityTrusted ? Color(nsColor: .systemGreen) : Color(nsColor: .systemOrange))
+                    }
                 }
-                Spacer()
-                Button(accessibilityTrusted ? "Granted" : "Open Settings") {
-                    Onboarding.requestAccessibility()
-                    accessibilityTrusted = Onboarding.isAccessibilityTrusted
+                Text("macOS Accessibility lets OpenLookAway notice typing so a break can wait until you pause.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !accessibilityTrusted {
+                    Button("Grant in System Settings") {
+                        Onboarding.requestAccessibility()
+                        accessibilityTrusted = Onboarding.isAccessibilityTrusted
+                    }
                 }
-                .disabled(accessibilityTrusted)
             }
 
             Toggle("Open at login", isOn: $openAtLogin)
