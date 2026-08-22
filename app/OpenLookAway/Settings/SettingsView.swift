@@ -123,8 +123,11 @@ struct SettingsView: View {
                 if store.engine.settings.beastModeEnabled {
                     Stepper("Push-ups  \(store.engine.settings.beastPushUps)", value: settings.beastPushUps, in: 1...100)
                 }
-            } footer: {
-                Text("Honor system. Tap Done when finished.")
+                Text("Optional. Each break asks for push-ups on the honor system. Tap Done when finished.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .formStyle(.grouped)

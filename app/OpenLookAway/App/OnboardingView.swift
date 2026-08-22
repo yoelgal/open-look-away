@@ -93,6 +93,11 @@ struct OnboardingView: View {
                     openAtLogin = Onboarding.opensAtLogin
                 }
 
+            Text("Later: Settings → Beast turns on optional push-up breaks.")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .padding(.top, 12)
+
             Spacer(minLength: 0)
 
             HStack {
