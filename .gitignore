@@ -7,3 +7,7 @@ DerivedData/
 gauntlet/run/
 /tmp/
 .worktrees/
+
+video/node_modules/
+video/out/
+video/public/
