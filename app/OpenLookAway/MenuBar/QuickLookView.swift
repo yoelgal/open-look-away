@@ -35,7 +35,7 @@ struct QuickLookView: View {
             Group {
                 if tab == 0 { now } else { stats }
             }
-            .frame(maxWidth: .infinity, minHeight: 280, maxHeight: 280, alignment: .top)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             if let update = store.availableUpdate {
                 UpdateNotice(update: update)
             }

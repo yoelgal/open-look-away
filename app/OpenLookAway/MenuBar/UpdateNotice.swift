@@ -11,15 +11,15 @@ struct UpdateNotice: View {
         Button { showing = true } label: {
             HStack(spacing: 8) {
                 Image(systemName: "arrow.down.circle")
-                VStack(alignment: .leading, spacing: 1) {
-                    Text("Update available")
-                        .font(.system(size: 13, weight: .medium))
-                    Text("Version \(update.version)")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.secondary)
-                }
+                Text("Update available")
+                    .font(.system(size: 13, weight: .medium))
+                Text(update.version)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
             }
+            .lineLimit(1)
+            .fixedSize(horizontal: false, vertical: true)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
