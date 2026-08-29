@@ -56,8 +56,8 @@ struct QuickLookView: View {
 
             HStack(spacing: 10) {
                 Button("Start break") { store.startBreakNow() }
-                Button("+1m") { _ = store.engine.snooze(minutes: 1) }
-                Button("+5m") { _ = store.engine.snooze(minutes: 5) }
+                Button("+1m") { store.snooze(minutes: 1) }
+                Button("+5m") { store.snooze(minutes: 5) }
             }
             .controlSize(.large)
 

@@ -63,9 +63,12 @@ extension NSWindow {
     }
 
     func discardHostedContent() {
-        contentViewController = nil
-        contentView = nil
         orderOut(nil)
-        close()
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.contentViewController = nil
+            self.contentView = nil
+            self.close()
+        }
     }
 }

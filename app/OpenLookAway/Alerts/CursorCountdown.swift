@@ -22,7 +22,7 @@ final class CursorCountdownController {
             panel.level = .statusBar
             panel.hasShadow = true
             panel.ignoresMouseEvents = true
-            panel.isReleasedWhenClosed = true
+            panel.isReleasedWhenClosed = false
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             panel.installGlassHost(CursorCountdownView(store: store))
             window = panel

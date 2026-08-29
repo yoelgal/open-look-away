@@ -23,7 +23,7 @@ final class HeadsUpController {
             panel.hasShadow = true
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             panel.hidesOnDeactivate = false
-            panel.isReleasedWhenClosed = true
+            panel.isReleasedWhenClosed = false
             panel.installGlassHost(HeadsUpToast(store: store), cornerRadius: 16)
             window = panel
         }
@@ -53,9 +53,9 @@ struct HeadsUpToast: View {
                 .foregroundStyle(.secondary)
             HStack {
                 Button("Start now") { store.startBreakNow() }
-                Button("+1m") { _ = store.engine.snooze(minutes: 1) }
-                Button("+5m") { _ = store.engine.snooze(minutes: 5) }
-                Button("+15m") { _ = store.engine.snooze(minutes: 15) }
+                Button("+1m") { store.snooze(minutes: 1) }
+                Button("+5m") { store.snooze(minutes: 5) }
+                Button("+15m") { store.snooze(minutes: 15) }
             }
         }
         .padding(16)

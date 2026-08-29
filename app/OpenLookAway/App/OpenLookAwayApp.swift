@@ -74,7 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
             window.title = "Settings"
             window.titlebarAppearsTransparent = true
-            window.isReleasedWhenClosed = true
+            window.isReleasedWhenClosed = false
             window.installGlassHost(SettingsView(store: store))
             window.center()
             NotificationCenter.default.addObserver(
@@ -109,7 +109,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             panel.level = .statusBar
             panel.hasShadow = true
             panel.hidesOnDeactivate = false
-            panel.isReleasedWhenClosed = true
+            panel.isReleasedWhenClosed = false
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             panel.installGlassHost(QuickLookView(store: store), cornerRadius: 18)
             self.panel = panel

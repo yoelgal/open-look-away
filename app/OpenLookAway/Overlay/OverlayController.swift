@@ -81,7 +81,7 @@ final class OverlayController {
             win.hidesOnDeactivate = false
             win.ignoresMouseEvents = false
             win.hasShadow = false
-            win.isReleasedWhenClosed = true
+            win.isReleasedWhenClosed = false
             win.animationBehavior = .none
             win.becomesKeyOnlyIfNeeded = true
             let root: AnyView = store.engine.settings.beastModeEnabled

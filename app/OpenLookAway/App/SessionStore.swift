@@ -124,6 +124,12 @@ final class SessionStore: ObservableObject {
         onStatusChange()
     }
 
+    func snooze(minutes: Int) {
+        guard engine.snooze(minutes: minutes) else { return }
+        syncChrome()
+        onStatusChange()
+    }
+
     func skipBreak() {
         _ = engine.skipBreak()
         syncChrome()

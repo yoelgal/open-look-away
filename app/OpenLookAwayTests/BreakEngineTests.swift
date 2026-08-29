@@ -1,4 +1,5 @@
 import XCTest
+import SwiftUI
 @testable import OpenLookAway
 
 @MainActor
@@ -97,6 +98,41 @@ final class BreakEngineTests: XCTestCase {
         let e = BreakEngine(settings: s)
         XCTAssertTrue(e.snooze(minutes: 1))
         XCTAssertFalse(e.snooze(minutes: 1))
+    }
+    func testSessionStoreStartBreakNowFromHeadsUp() {
+        let store = SessionStore()
+        store.jumpToHeadsUp()
+        XCTAssertEqual(store.engine.phase, .headsUp)
+        store.startBreakNow()
+        XCTAssertEqual(store.engine.phase, .breaking)
+    }
+
+    func testSessionStoreSnoozeFromHeadsUp() {
+        let store = SessionStore()
+        store.jumpToHeadsUp()
+        XCTAssertEqual(store.engine.phase, .headsUp)
+        store.snooze(minutes: 5)
+        XCTAssertEqual(store.engine.phase, .focusing)
+    }
+
+    func testDiscardHostedContentSafeTeardown() {
+        let win = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 200, height: 100),
+            styleMask: [.borderless],
+            backing: .buffered,
+            defer: false
+        )
+        win.isReleasedWhenClosed = false
+        win.installGlassHost(Text("Hello"))
+        XCTAssertNotNil(win.contentView)
+        win.discardHostedContent()
+        let exp = expectation(description: "content discarded")
+        DispatchQueue.main.async {
+            XCTAssertNil(win.contentViewController)
+            XCTAssertNil(win.contentView)
+            exp.fulfill()
+        }
+        wait(for: [exp], timeout: 1.0)
     }
 }
 
