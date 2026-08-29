@@ -22,6 +22,7 @@ final class CursorCountdownController {
             panel.level = .statusBar
             panel.hasShadow = true
             panel.ignoresMouseEvents = true
+            panel.isReleasedWhenClosed = true
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             panel.installGlassHost(CursorCountdownView(store: store))
             window = panel
@@ -38,7 +39,8 @@ final class CursorCountdownController {
     func hide() {
         follow?.invalidate()
         follow = nil
-        window?.orderOut(nil)
+        window?.discardHostedContent()
+        window = nil
     }
 
     private func reposition() {

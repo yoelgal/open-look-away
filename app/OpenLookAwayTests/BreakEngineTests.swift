@@ -13,6 +13,11 @@ final class BreakEngineTests: XCTestCase {
         XCTAssertFalse(s.beastModeEnabled)
     }
 
+    func testNoEventTap() {
+        // battery-usage: keyDown tap listed the app under Using Significant Energy
+        XCTAssertFalse(SmartPause().hasEventTap)
+    }
+
     func testFocusedTimeIgnoresPause() {
         let e = BreakEngine(settings: AppSettings())
         e.tick(now: Date(), paused: false, reason: nil, step: 10)

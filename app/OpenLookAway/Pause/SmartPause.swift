@@ -9,8 +9,9 @@ struct PauseSignal: Equatable {
 }
 
 final class SmartPause {
-    private var lastKeyOrDrag: Date = .distantPast
     private var tap: CFMachPort?
+    private var lastMeetingCheck = Date.distantPast
+    private var lastMeeting = false
     private var videoBundleIDs: Set<String> = [
         "com.apple.TV",
         "com.colliderli.iina",
@@ -18,15 +19,9 @@ final class SmartPause {
         "com.apple.QuickTimePlayerX"
     ]
 
-    init() {
-        installTap()
-    }
-    func retryTap() {
-        if tap != nil { return }
-        installTap()
-    }
+    var hasEventTap: Bool { tap != nil }
 
-    deinit { if let tap { CGEvent.tapEnable(tap: tap, enable: false) } }
+    func retryTap() {}
 
     func poll(settings: AppSettings) -> PauseSignal {
         if settings.pauseDenylist, let id = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,
@@ -39,7 +34,7 @@ final class SmartPause {
         if settings.pauseVideo, videoPlaying() {
             return PauseSignal(paused: true, reason: "Video playback")
         }
-        if settings.pauseTyping, Date().timeIntervalSince(lastKeyOrDrag) < 1.5 {
+        if settings.pauseTyping, typingOrDragging() {
             return PauseSignal(paused: true, reason: "Typing")
         }
         if settings.pauseIdle {
@@ -52,35 +47,22 @@ final class SmartPause {
         return PauseSignal(paused: false, reason: nil)
     }
 
-    private func installTap() {
-        let mask = (1 << CGEventType.keyDown.rawValue)
-            | (1 << CGEventType.leftMouseDragged.rawValue)
-            | (1 << CGEventType.rightMouseDragged.rawValue)
-            | (1 << CGEventType.otherMouseDragged.rawValue)
-        let info = Unmanaged.passUnretained(self).toOpaque()
-        guard let tap = CGEvent.tapCreate(
-            tap: .cgSessionEventTap,
-            place: .headInsertEventTap,
-            options: .listenOnly,
-            eventsOfInterest: CGEventMask(mask),
-            callback: { _, type, event, refcon in
-                guard let refcon else { return Unmanaged.passUnretained(event) }
-                let me = Unmanaged<SmartPause>.fromOpaque(refcon).takeUnretainedValue()
-                if type == .keyDown || type == .leftMouseDragged || type == .rightMouseDragged || type == .otherMouseDragged {
-                    me.lastKeyOrDrag = Date()
-                }
-                return Unmanaged.passUnretained(event)
-            },
-            userInfo: info
-        ) else { return }
-        self.tap = tap
-        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
-        CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
-        CGEvent.tapEnable(tap: tap, enable: true)
+    private func typingOrDragging() -> Bool {
+        let key = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .keyDown)
+        let left = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .leftMouseDragged)
+        let right = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .rightMouseDragged)
+        let other = CGEventSource.secondsSinceLastEventType(.combinedSessionState, eventType: .otherMouseDragged)
+        return min(key, left, right, other) < 1.5
     }
 
     private func micOrCameraInUse() -> Bool {
-        micInUse() || cameraInUse()
+        let now = Date()
+        if now.timeIntervalSince(lastMeetingCheck) < 5 {
+            return lastMeeting
+        }
+        lastMeetingCheck = now
+        lastMeeting = micInUse() || cameraInUse()
+        return lastMeeting
     }
 
     private func micInUse() -> Bool {
@@ -134,7 +116,6 @@ final class SmartPause {
         }
         return false
     }
-
 
     private func videoPlaying() -> Bool {
         guard let app = NSWorkspace.shared.frontmostApplication?.bundleIdentifier,

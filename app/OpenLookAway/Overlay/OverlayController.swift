@@ -36,12 +36,13 @@ final class OverlayController {
     }
 
     func hide() {
+        guard visible || !windows.isEmpty else { return }
         visible = false
         let closing = windows
         windows.removeAll()
         showingBeast = nil
         let tearDown = {
-            for w in closing { w.orderOut(nil) }
+            for w in closing { w.discardHostedContent() }
         }
         if NSWorkspace.shared.accessibilityDisplayShouldReduceMotion {
             tearDown()
@@ -56,7 +57,7 @@ final class OverlayController {
     }
 
     private func build(store: SessionStore) {
-        for w in windows { w.orderOut(nil) }
+        for w in windows { w.discardHostedContent() }
         windows.removeAll()
         showingBeast = store.engine.settings.beastModeEnabled
         let shield = NSWindow.Level(rawValue: Int(CGShieldingWindowLevel()))
@@ -80,7 +81,7 @@ final class OverlayController {
             win.hidesOnDeactivate = false
             win.ignoresMouseEvents = false
             win.hasShadow = false
-            win.isReleasedWhenClosed = false
+            win.isReleasedWhenClosed = true
             win.animationBehavior = .none
             win.becomesKeyOnlyIfNeeded = true
             let root: AnyView = store.engine.settings.beastModeEnabled

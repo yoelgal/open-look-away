@@ -8,7 +8,7 @@ struct OpaqueGlass: NSViewRepresentable {
         let view = NSVisualEffectView()
         view.material = material
         view.blendingMode = .behindWindow
-        view.state = .active
+        view.state = .followsWindowActiveState
         view.isEmphasized = true
         return view
     }
@@ -31,7 +31,7 @@ extension NSWindow {
         let glass = NSVisualEffectView()
         glass.material = material
         glass.blendingMode = .behindWindow
-        glass.state = .active
+        glass.state = .followsWindowActiveState
         glass.isEmphasized = true
         glass.autoresizingMask = [.width, .height]
         host.autoresizingMask = [.width, .height]
@@ -60,5 +60,12 @@ extension NSWindow {
         isMovableByWindowBackground = true
         hasShadow = true
         invalidateShadow()
+    }
+
+    func discardHostedContent() {
+        contentViewController = nil
+        contentView = nil
+        orderOut(nil)
+        close()
     }
 }

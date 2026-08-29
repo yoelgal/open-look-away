@@ -23,6 +23,7 @@ final class HeadsUpController {
             panel.hasShadow = true
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             panel.hidesOnDeactivate = false
+            panel.isReleasedWhenClosed = true
             panel.installGlassHost(HeadsUpToast(store: store), cornerRadius: 16)
             window = panel
         }
@@ -35,7 +36,8 @@ final class HeadsUpController {
     }
 
     func hide() {
-        window?.orderOut(nil)
+        window?.discardHostedContent()
+        window = nil
     }
 }
 

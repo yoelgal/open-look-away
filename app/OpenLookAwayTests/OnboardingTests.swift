@@ -1,3 +1,4 @@
+import Combine
 import XCTest
 @testable import OpenLookAway
 
@@ -86,5 +87,26 @@ final class OnboardingTests: XCTestCase {
         store.setManualPaused(false)
         store.step(now: Date())
         XCTAssertGreaterThan(store.engine.focusedSeconds, before)
+    }
+
+    func testIdleTickDoesNotBroadcastToSwiftUI() {
+        // battery-usage: 1 Hz remainingFocus plus retained NSHostingViews plus keyDown tap listed the app under Using Significant Energy
+        let store = SessionStore(defaults: defaults)
+        store.finishOnboarding(
+            focusMinutes: 20,
+            shortBreakSeconds: 20,
+            accessibilityGranted: true
+        )
+        var fires = 0
+        let sub = store.objectWillChange.sink { fires += 1 }
+        let now = Date()
+        store.step(now: now)
+        store.step(now: now.addingTimeInterval(1))
+        store.step(now: now.addingTimeInterval(2))
+        XCTAssertEqual(fires, 0)
+        store.panelOpen = true
+        store.step(now: now.addingTimeInterval(3))
+        XCTAssertGreaterThan(fires, 0)
+        _ = sub
     }
  }

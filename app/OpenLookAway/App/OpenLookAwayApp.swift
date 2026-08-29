@@ -1,5 +1,4 @@
 import AppKit
-import Combine
 import SwiftUI
 
 @main
@@ -7,8 +6,9 @@ struct OpenLookAwayApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
+        // Custom settings window observes the store; this scene must not.
         Settings {
-            SettingsView(store: appDelegate.store)
+            EmptyView()
         }
     }
 }
@@ -20,7 +20,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var panel: NSPanel?
     private var settingsWindow: NSWindow?
     private var onboarding: OnboardingWindowController?
-    private var cancellables = Set<AnyCancellable>()
+    private var lastChip = ""
+    private var lastBeast = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -31,10 +32,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.button?.action = #selector(handleStatusClick)
         item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         self.item = item
-        store.objectWillChange.sink { [weak self] _ in
-            // objectWillChange fires before the new value is stored; refresh after.
-            DispatchQueue.main.async { self?.refreshTitle() }
-        }.store(in: &cancellables)
+        store.onStatusChange = { [weak self] in self?.refreshTitle() }
         refreshTitle()
         store.openSettings = { [weak self] in self?.showSettings() }
         store.startUpdateChecks()
@@ -60,13 +58,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             store.jumpToHeadsUp()
         }
         if panel?.isVisible == true {
-            panel?.orderOut(nil)
+            hidePanel()
             return
         }
         showPanel()
     }
     private func showSettings() {
-        panel?.orderOut(nil)
+        hidePanel()
         if settingsWindow == nil {
             let window = NSWindow(
                 contentRect: NSRect(x: 0, y: 0, width: 520, height: 500),
@@ -76,7 +74,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             )
             window.title = "Settings"
             window.titlebarAppearsTransparent = true
-            window.isReleasedWhenClosed = false
+            window.isReleasedWhenClosed = true
             window.installGlassHost(SettingsView(store: store))
             window.center()
             NotificationCenter.default.addObserver(
@@ -85,6 +83,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 queue: .main
             ) { [weak self] _ in
                 Task { @MainActor in
+                    self?.settingsWindow?.discardHostedContent()
                     self?.settingsWindow = nil
                     if self?.onboarding == nil {
                         NSApp.setActivationPolicy(.accessory)
@@ -110,6 +109,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             panel.level = .statusBar
             panel.hasShadow = true
             panel.hidesOnDeactivate = false
+            panel.isReleasedWhenClosed = true
             panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
             panel.installGlassHost(QuickLookView(store: store), cornerRadius: 18)
             self.panel = panel
@@ -117,13 +117,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard let panel, let button = item?.button, let buttonWindow = button.window else { return }
         let buttonRect = buttonWindow.convertToScreen(button.convert(button.bounds, to: nil))
         panel.setFrameOrigin(NSPoint(x: buttonRect.maxX - 360, y: buttonRect.minY - 410))
+        store.panelOpen = true
         panel.orderFrontRegardless()
+    }
+
+    private func hidePanel() {
+        store.panelOpen = false
+        panel?.discardHostedContent()
+        panel = nil
     }
 
     private func refreshTitle() {
         item?.button?.title = ""
         item?.button?.imagePosition = .imageOnly
-        let image = StatusChip.image(text: StatusChip.label(for: store.engine), beast: store.engine.isBeast)
+        let text = StatusChip.label(for: store.engine)
+        let beast = store.engine.isBeast
+        if text == lastChip, beast == lastBeast { return }
+        lastChip = text
+        lastBeast = beast
+        let image = StatusChip.image(text: text, beast: beast)
         image.isTemplate = false
         item?.button?.image = image
     }

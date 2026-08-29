@@ -17,7 +17,17 @@ final class SessionStore: ObservableObject {
     var needsOnboarding: Bool { Onboarding.needsOnboarding(defaults: defaults) }
     var manualPaused = false
     var openSettings: () -> Void = {}
+    var onStatusChange: () -> Void = {}
+    var panelOpen = false
     @Published var availableUpdate: AvailableUpdate?
+
+    private var clockUIVisible: Bool {
+        if panelOpen { return true }
+        switch engine.phase {
+        case .headsUp, .cursorCountdown, .breaking: return true
+        default: return false
+        }
+    }
 
     func startUpdateChecks() {
         Task { @MainActor [weak self] in
@@ -58,9 +68,10 @@ final class SessionStore: ObservableObject {
             engine.parkIdle()
         }
         engine.objectWillChange.sink { [weak self] _ in
-            self?.objectWillChange.send()
+            guard let self, self.clockUIVisible else { return }
+            self.objectWillChange.send()
         }.store(in: &cancellables)
-        timer = Timer.publish(every: 1, on: .main, in: .common)
+        timer = Timer.publish(every: 1, tolerance: 0.25, on: .main, in: .default)
             .autoconnect()
             .sink { [weak self] now in
                 self?.step(now: now)
@@ -82,6 +93,7 @@ final class SessionStore: ObservableObject {
         }
         engine.tick(now: now, paused: signal.paused, reason: signal.reason)
         syncChrome()
+        onStatusChange()
     }
 
     func setManualPaused(_ on: Bool) {
@@ -103,26 +115,31 @@ final class SessionStore: ObservableObject {
         pause.retryTap()
         engine.armed = true
         engine.unpark()
+        onStatusChange()
     }
 
     func startBreakNow() {
         engine.startBreakNow()
         syncChrome()
+        onStatusChange()
     }
 
     func skipBreak() {
         _ = engine.skipBreak()
         syncChrome()
+        onStatusChange()
     }
 
     func finishBreak() {
         engine.endBreak()
         syncChrome()
+        onStatusChange()
     }
 
     func jumpToHeadsUp() {
         engine.debugJumpToHeadsUp()
         syncChrome()
+        onStatusChange()
     }
 
     private func syncChrome() {
@@ -131,19 +148,25 @@ final class SessionStore: ObservableObject {
             if headsUp == nil { headsUp = HeadsUpController(store: self) }
             headsUp?.show()
             cursor?.hide()
+            cursor = nil
             overlays.hide()
         case .cursorCountdown:
             headsUp?.hide()
+            headsUp = nil
             if cursor == nil { cursor = CursorCountdownController(store: self) }
             cursor?.show()
             overlays.hide()
         case .breaking:
             headsUp?.hide()
+            headsUp = nil
             cursor?.hide()
+            cursor = nil
             overlays.show(store: self)
         default:
             headsUp?.hide()
+            headsUp = nil
             cursor?.hide()
+            cursor = nil
             overlays.hide()
         }
     }
